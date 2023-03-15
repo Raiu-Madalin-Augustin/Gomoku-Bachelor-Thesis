@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gomoku.GUI", "Gomoku.GUI.csproj", "{8BD84F89-2B2C-45C8-A329-1817CB1D403B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gomoky.Logic", "..\Gomoky.Logic\Gomoky.Logic.csproj", "{190F3BD3-CE51-4686-A5FF-89D2DC42F487}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BD84F89-2B2C-45C8-A329-1817CB1D403B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BD84F89-2B2C-45C8-A329-1817CB1D403B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BD84F89-2B2C-45C8-A329-1817CB1D403B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BD84F89-2B2C-45C8-A329-1817CB1D403B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{190F3BD3-CE51-4686-A5FF-89D2DC42F487}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{190F3BD3-CE51-4686-A5FF-89D2DC42F487}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{190F3BD3-CE51-4686-A5FF-89D2DC42F487}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{190F3BD3-CE51-4686-A5FF-89D2DC42F487}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ABE74E16-23B1-4DC3-AB27-C0A56E1C2C53}
+	EndGlobalSection
+EndGlobal
