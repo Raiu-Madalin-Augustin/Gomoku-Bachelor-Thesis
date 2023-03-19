@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" MinHeight="650" MinWidth="700">
     <Window.Resources>
+        <Style x:Key="BoardStackPanelStyle"
+               TargetType="StackPanel">
+            <Setter Property="Background"
+                    Value="{x:Null}" />
+        </Style>
         <Style x:Key="MarginTileStyle"
                TargetType="Button">
             <Setter Property="Background"
@@ -41,6 +46,7 @@
                     Value="30" />
         </Style>
         <Style x:Key="ColumnStyle"
+               BasedOn="{StaticResource BoardStackPanelStyle}"
                TargetType="StackPanel">
             <Setter Property="Orientation"
                     Value="Horizontal" />
@@ -60,7 +66,7 @@
             </Grid.ColumnDefinitions>
             <Border>
                 <Border.Background>
-                    <ImageBrush ImageSource="Resources/board.png"
+                    <ImageBrush ImageSource="Resources\boardbackground.png"
                                 Stretch="Uniform" />
                 </Border.Background>
                 <Grid>
@@ -68,9 +74,13 @@
                               VerticalAlignment="Center"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="VerticalStackPanel" 
-                                Orientation="Vertical">
-                        </StackPanel>
+                        <Border BorderBrush="#FFBFBFBF"
+                                BorderThickness="0,0,1,1">
+                            <StackPanel x:Name="VerticalStackPanel" 
+                                    Orientation="Vertical"
+                                    Style="{StaticResource BoardStackPanelStyle}">
+                            </StackPanel>
+                        </Border>
                     </ScrollViewer>
                 </Grid>
             </Border>

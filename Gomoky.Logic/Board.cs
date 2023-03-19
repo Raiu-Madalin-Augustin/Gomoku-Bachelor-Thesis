@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gomoky.Logic
+namespace Gomoku.Logic
 {
     public class Board
     {

@@ -16,14 +16,17 @@
 
   <ItemGroup>
     <None Remove="Resources\background.png" />
+    <None Remove="Resources\board.jpg" />
+    <None Remove="Resources\board.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gomoky.Logic\Gomoky.Logic.csproj" />
+    <ProjectReference Include="..\Gomoky.Logic\Gomoku.Logic.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Resources\background.png" />
+    <Resource Include="Resources\boardbackground.png" />
   </ItemGroup>
 
 </Project>

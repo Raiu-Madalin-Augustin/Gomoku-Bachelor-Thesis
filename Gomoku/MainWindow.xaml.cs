@@ -1,6 +1,8 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using Gomoku.GUI.ViewModels;
+using Gomoku.Logic;
 
 namespace Gomoku.GUI
 {
@@ -9,14 +11,26 @@ namespace Gomoku.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        public BoardViewModel Board { get; }
+        public MainWindow() :
+            this(15, 15,
+            new List<Player>()
+            {
+                new Player("p1", new Piece(), new GomokuBase(), false),
+                new Player("p2", new Piece(), new GomokuBase(), false)
+            })
+        {
 
-        public MainWindow()
+        }
+        public BoardViewModel Board { get; }
+        public Game Game { get; set; }
+
+        public MainWindow(int boardWidth, int boardHeight, IEnumerable<Player> players)
         {
             InitializeComponent();
-            Board = new BoardViewModel();
+            Game = new Game(15, 15, players);
+            Board = new BoardViewModel(Game);
 
-            Initialize(15, 15);
+            Initialize(boardWidth, boardHeight);
         }
 
         private void Initialize(int width, int height)
@@ -59,7 +73,7 @@ namespace Gomoku.GUI
             {
                 var widthPanel = new StackPanel()
                 {
-                    Style= columnStyle
+                    Style = columnStyle
                 };
 
                 var rowCoordinate = new Button()

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Gomoky.Logic;
+using Gomoku.Logic;
 
 namespace Gomoku.GUI.ViewModels
 {
@@ -16,9 +15,9 @@ namespace Gomoku.GUI.ViewModels
         public TileViewModel this[int x, int y] => TileVMs[x, y];
         public Board Board { get; set; }
 
-        public BoardViewModel()
+        public BoardViewModel(Game game)
         {
-            Board = new Board(15, 15);
+            Board = game.Board;
             Width = 15;
             Height = 15;
             TileVMs = new TileViewModel[Width, Height];
