@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gomoky.Logic
+namespace Gomoku.Logic
 {
     public class Board
     {
-        private Tile[,] _tiles;
+        private readonly Tile[,] _tiles;
 
         public int Width { get; }
         public int Height { get; }

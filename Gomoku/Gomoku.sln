@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gomoku.GUI", "Gomoku.GUI.csproj", "{8BD84F89-2B2C-45C8-A329-1817CB1D403B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gomoku.GUI", "Gomoku.GUI.csproj", "{8BD84F89-2B2C-45C8-A329-1817CB1D403B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gomoky.Logic", "..\Gomoky.Logic\Gomoky.Logic.csproj", "{190F3BD3-CE51-4686-A5FF-89D2DC42F487}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gomoku.Logic", "..\Gomoky.Logic\Gomoku.Logic.csproj", "{190F3BD3-CE51-4686-A5FF-89D2DC42F487}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

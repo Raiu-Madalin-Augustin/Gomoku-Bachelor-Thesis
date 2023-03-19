@@ -6,15 +6,10 @@ using System.Threading.Tasks;
 
 namespace Gomoku.Logic
 {
-    public class Tile
+    public class GomokuBase
     {
-        public int X { get; }
-        public int Y { get; }
-
-        public Tile(int x, int y)
+        public GomokuBase()
         {
-            X = x;
-            Y = y;
         }
     }
 }
