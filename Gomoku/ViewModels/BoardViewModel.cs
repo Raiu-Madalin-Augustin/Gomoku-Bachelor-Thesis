@@ -13,10 +13,12 @@ namespace Gomoku.GUI.ViewModels
         public int Width { get; set; }
         public int Height { get; set; }
         public TileViewModel[,] TileVMs { get; }
+        public TileViewModel this[int x, int y] => TileVMs[x, y];
         public Board Board { get; set; }
 
         public BoardViewModel()
         {
+            Board = new Board(15, 15);
             Width = 15;
             Height = 15;
             TileVMs = new TileViewModel[Width, Height];

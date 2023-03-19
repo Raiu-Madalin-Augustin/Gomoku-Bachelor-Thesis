@@ -8,7 +8,7 @@ namespace Gomoky.Logic
 {
     public class Board
     {
-        private Tile[,] _tiles;
+        private readonly Tile[,] _tiles;
 
         public int Width { get; }
         public int Height { get; }
