@@ -99,5 +99,14 @@ namespace Gomoku.GUI
 
             }
         }
+        private void TileClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is null || Game.IsOver)
+            {
+                return;
+            }
+
+            if (sender is Button { DataContext: TileViewModel tile }) Game.Play(tile.Tile.X, tile.Tile.Y);
+        }
     }
 }

@@ -44,6 +44,20 @@
                     Value="30" />
             <Setter Property="Width"
                     Value="30" />
+
+            <EventSetter Event="Click" Handler="TileClick"></EventSetter>
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsHighlighted}"
+                                   Value="True" />
+                        <Condition Binding="{Binding IsSelected}"
+                                   Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter Property="Background"
+                            Value="#3FFFFF00" />
+                </MultiDataTrigger>
+            </Style.Triggers>
         </Style>
         <Style x:Key="ColumnStyle"
                BasedOn="{StaticResource BoardStackPanelStyle}"
