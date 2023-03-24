@@ -17,6 +17,15 @@ namespace Gomoku.GUI.ViewModels
             get => _isHighlighted;
             set => Set(ref _isHighlighted, value);
         }
+        public Piece Piece
+        {
+            get => Tile.Piece;
+            set
+            {
+                Tile.Piece = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public bool IsSelected
         {

@@ -24,7 +24,7 @@ namespace Gomoku.Logic
             {
                 for (var j = 0; j < Height; j++)
                 {
-                    _tiles[i, j] = new Tile(i, j);
+                    _tiles[i, j] = new Tile(i, j, new Piece(Pieces.None));
                 }
             }
         }

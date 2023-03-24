@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using Gomoku.GUI.ViewModels;
@@ -11,26 +12,33 @@ namespace Gomoku.GUI
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly int _boardWidth;
+        private readonly int _boardHeight;
+        private readonly IEnumerable<Player> _players;
+
         public MainWindow() :
             this(15, 15,
             new List<Player>()
             {
-                new Player("p1", new Piece(), new GomokuBase(), false),
-                new Player("p2", new Piece(), new GomokuBase(), false)
+                new Player("p1", new Piece(Pieces.X), new GomokuBase(), false),
+                new Player("p2", new Piece(Pieces.Y), new GomokuBase(), false)
             })
         {
 
         }
-        public BoardViewModel Board { get; }
+        public BoardViewModel Board { get; set; }
         public Game Game { get; set; }
 
         public MainWindow(int boardWidth, int boardHeight, IEnumerable<Player> players)
         {
             InitializeComponent();
-            Game = new Game(15, 15, players);
+            Game = new Game(boardHeight, boardWidth, players);
             Board = new BoardViewModel(Game);
 
-            Initialize(boardWidth, boardHeight);
+            Initialize(boardHeight, boardWidth);
+            _boardWidth = boardWidth;
+            _boardHeight = boardHeight;
+            _players = players;
         }
 
         private void Initialize(int width, int height)
@@ -90,7 +98,7 @@ namespace Gomoku.GUI
                     var tile = new Button()
                     {
                         Style = tileStyle,
-                        DataContext = Board[j, i]
+                        DataContext = Board[i, j]
                     };
                     widthPanel.Children.Add(tile);
                 }
@@ -107,6 +115,11 @@ namespace Gomoku.GUI
             }
 
             if (sender is Button { DataContext: TileViewModel tile }) Game.Play(tile.Tile.X, tile.Tile.Y);
+        }
+
+        private void Restart(object sender, RoutedEventArgs e)
+        {
+            Game.RestartGame();
         }
     }
 }

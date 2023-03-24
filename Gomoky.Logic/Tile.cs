@@ -10,11 +10,12 @@ namespace Gomoku.Logic
     {
         public int X { get; }
         public int Y { get; }
-
-        public Tile(int x, int y)
+        public Piece Piece { get; set; }
+        public Tile(int x, int y, Piece piece)
         {
             X = x;
             Y = y;
+            Piece = piece;
         }
     }
 }
