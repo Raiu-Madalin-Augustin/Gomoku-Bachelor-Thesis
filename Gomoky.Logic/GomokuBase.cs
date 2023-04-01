@@ -11,5 +11,10 @@ namespace Gomoku.Logic
         public GomokuBase()
         {
         }
+
+        public Tuple<int, int> Analyze()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

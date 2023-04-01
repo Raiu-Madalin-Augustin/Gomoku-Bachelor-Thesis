@@ -34,10 +34,10 @@ namespace Gomoku.Logic
         /// </summary>
         public bool IsOver { get; private set; }
         public IEnumerable<Player> Players { get; }
-        public int CurrentPlayer { get; set; }
+        public Player CurrentPlayer { get; set; }
 
-        public event EventHandler<UpdateBoardEvent> UpdateBoard;
-        public event EventHandler<ResetBoardEvent> ResetBoard;
+        public event EventHandler<UpdateBoardEvent>? UpdateBoard;
+        public event EventHandler<ResetBoardEvent>? ResetBoard;
 
 
         public Game(int width, int height, IEnumerable<Player> players)
@@ -46,8 +46,9 @@ namespace Gomoku.Logic
             IsOver = false;
             _width = width;
             _height = height;
-            Players = players;
-            CurrentPlayer = 0;
+            var enumerable = players as Player[] ?? players.ToArray();
+            Players = enumerable;
+            CurrentPlayer = enumerable.First();
         }
 
         public void Play(int x, int y)
@@ -56,34 +57,33 @@ namespace Gomoku.Logic
             {
                 return;
             }
-            Tile tile = Board[x, y];
+            var tile = Board[x, y];
 
             if (tile.Piece.TypeIndex != ((int)Pieces.None))
             {
                 return;
             }
 
+            var currentPlayerData = Players.FirstOrDefault(player => player == CurrentPlayer)!;
+            tile.Piece = currentPlayerData.Piece;
 
-            tile.Piece = Players.ToArray()[CurrentPlayer].Piece;
-            if (CurrentPlayer == 0)
-            {
-                CurrentPlayer = 1;
-            }
-            else
-            {
-                CurrentPlayer = 0;
-            }
-            UpdateBoard.Invoke(this, new UpdateBoardEvent(tile));
+            CurrentPlayer = CurrentPlayer == currentPlayerData ? Players.FirstOrDefault(player => player != CurrentPlayer)! : currentPlayerData;
+            UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
 
             if (CheckIfGameIsOver(_height, _width, tile.Piece))
             {
                 IsOver = true;
             }
 
-
             if (IsOver)
             {
                 MessageBox.Show("Winner");
+            }
+
+            if (CurrentPlayer.GomokuAi != null && CurrentPlayer.GomokuAi.GetType() == typeof(GomokuBase))
+            {
+                var move = CurrentPlayer.GomokuAi.Analyze();
+                Play(move.Item1, move.Item2);
             }
         }
 
@@ -92,9 +92,9 @@ namespace Gomoku.Logic
         {
 
             // vertical
-            for (int row = 0; row <= _height - 5; row++)
+            for (var row = 0; row <= _height - 5; row++)
             {
-                for (int col = 0; col < _width; col++)
+                for (var col = 0; col < _width; col++)
                 {
                     if (Board[row, col].Piece != Pieces.None &&
                     Board[row, col].Piece.TypeIndex == Board[row + 1, col].Piece.TypeIndex &&
@@ -108,9 +108,9 @@ namespace Gomoku.Logic
             }
 
             // horizontal
-            for (int row = 0; row < _height; row++)
+            for (var row = 0; row < _height; row++)
             {
-                for (int col = 0; col <= _width - 5; col++)
+                for (var col = 0; col <= _width - 5; col++)
                 {
                     if (Board[row, col].Piece != Pieces.None &&
                     Board[row, col].Piece.TypeIndex == Board[row, col + 1].Piece.TypeIndex &&
@@ -125,9 +125,9 @@ namespace Gomoku.Logic
             }
 
             // right and down
-            for (int row = 0; row <= _height - 5; row++)
+            for (var row = 0; row <= _height - 5; row++)
             {
-                for (int col = 0; col <= _width - 5; col++)
+                for (var col = 0; col <= _width - 5; col++)
                 {
                     if (Board[row, col].Piece != Pieces.None &&
                     Board[row, col].Piece.TypeIndex == Board[row + 1, col + 1].Piece.TypeIndex &&
@@ -141,9 +141,9 @@ namespace Gomoku.Logic
             }
 
             // right and up
-            for (int row = 4; row < _height; row++)
+            for (var row = 4; row < _height; row++)
             {
-                for (int col = 0; col <= _width - 5; col++)
+                for (var col = 0; col <= _width - 5; col++)
                 {
                     if (Board[row, col].Piece != Pieces.None &&
                     Board[row, col].Piece.TypeIndex == Board[row - 1, col + 1].Piece.TypeIndex &&
@@ -162,16 +162,16 @@ namespace Gomoku.Logic
         public void RestartGame()
         {
             IsOver = false;
-            for (int i = 0; i < _height; i++)
+            for (var i = 0; i < _height; i++)
             {
-                for (int j = 0; j < _width; j++)
+                for (var j = 0; j < _width; j++)
                 {
-                    Tile tile = Board[i, j];
+                    var tile = Board[i, j];
                     tile.Piece = new Piece(Pieces.None);
-                    UpdateBoard.Invoke(this, new UpdateBoardEvent(tile));
+                    UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
                 }
             }
-            ResetBoard.Invoke(this, new ResetBoardEvent());
+            ResetBoard?.Invoke(this, new ResetBoardEvent());
         }
     }
 }

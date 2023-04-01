@@ -20,8 +20,8 @@ namespace Gomoku.GUI
             this(15, 15,
             new List<Player>()
             {
-                new Player("p1", new Piece(Pieces.X), new GomokuBase(), false),
-                new Player("p2", new Piece(Pieces.Y), new GomokuBase(), false)
+                new Player("p1", new Piece(Pieces.X), false),
+                new Player("p2", new Piece(Pieces.Y), false)
             })
         {
 

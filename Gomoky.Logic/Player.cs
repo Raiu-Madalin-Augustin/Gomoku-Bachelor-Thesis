@@ -10,19 +10,25 @@ namespace Gomoku.Logic
     {
         public Piece Piece { get; set; }
 
-        public GomokuBase gomokuAI { get; set; }
+        public GomokuBase? GomokuAi { get; set; }
 
-        public bool autoPlay { get; set; }
+        public bool AutoPlay { get; set; }
 
-        public string playerName { get; set; }
+        public string PlayerName { get; set; }
 
         public Player(string name, Piece piece, GomokuBase gomoku, bool auto = false)
         {
-            playerName = name;
+            PlayerName = name;
             Piece = piece;
-            gomokuAI = gomoku;
-            autoPlay = auto;
+            GomokuAi = gomoku;
+            AutoPlay = auto;
         }
 
+        public Player(string name, Piece piece, bool auto = false)
+        {
+            PlayerName = name;
+            Piece = piece;
+            AutoPlay = auto;
+        }
     }
 }
