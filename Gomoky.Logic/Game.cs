@@ -14,6 +14,9 @@ namespace Gomoku.Logic
         public List<Tile> MoveHistory;
         public Board Board { get; set; }
 
+        public int FirstPlayerScore { get; set; }
+        public int SecondPlayerScore { get; set; }
+
         /// <summary>
         /// Checks if the game is over.
         /// </summary>
@@ -35,6 +38,7 @@ namespace Gomoku.Logic
             var enumerable = players as Player[] ?? players.ToArray();
             Players = enumerable;
             CurrentPlayer = enumerable.First();
+
         }
 
         public Game(Game game)
@@ -53,6 +57,7 @@ namespace Gomoku.Logic
         {
             if (IsOver)
             {
+               
                 return;
             }
             var tile = Board[x, y];
@@ -75,6 +80,14 @@ namespace Gomoku.Logic
 
             if (IsOver)
             {
+                if (currentPlayerData.PlayerName == Players.FirstOrDefault().PlayerName)
+                {
+                    FirstPlayerScore += 1;
+                }
+                else
+                {
+                    SecondPlayerScore += 1;
+                }
                 MessageBox.Show("Winner");
             }
 

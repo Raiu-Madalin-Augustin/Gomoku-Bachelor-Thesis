@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Gomoku" MinHeight="650" MinWidth="700">
+        Title="Gomoku" MinHeight="650" MinWidth="700" Height="998" Width="2298">
     <Window.Resources>
         <Style x:Key="ButtonStyle"
            TargetType="{x:Type Button}">
@@ -157,7 +157,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid x:Name="myGrid">
         <Grid.Background>
             <ImageBrush ImageSource="Resources/background.png"
                         Stretch="UniformToFill"/>
@@ -197,7 +197,35 @@
                   Click="Restart"
                   Content="Restart"
                   Style="{StaticResource ButtonStyle}"
-                  ToolTip="Start a new game" />
+                  ToolTip="Start a new game" >
+                    <Button.Resources>
+                        <Storyboard x:Key="FadeInStoryboard">
+                            <DoubleAnimation From="1" To="0" Duration="0:0:1" Storyboard.TargetProperty="Opacity" />
+                        </Storyboard>
+                        <Storyboard x:Key="FadeOutStoryboard">
+                            <DoubleAnimation From="0" To="1" Duration="0:0:1" Storyboard.TargetProperty="Opacity" />
+                        </Storyboard>
+                    </Button.Resources>
+                </Button>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition ></RowDefinition>
+                        <RowDefinition ></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock TextAlignment="Center" FontSize="15" Text ="{Binding FirstPlayerName, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"></TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="0" TextAlignment="Center" Text ="VS" FontSize="15"></TextBlock>
+                    <TextBlock Grid.Column="2" Grid.Row="0" TextAlignment="Center" FontSize="15" Text ="{Binding SecondPlayerName, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" ></TextBlock>
+
+                    <TextBlock Grid.Column="0" Grid.Row="1" TextAlignment="Center" FontSize="15" Text ="{Binding FirstPlayerScore, RelativeSource={RelativeSource FindAncestor, AncestorType=Window},UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                    <TextBlock Grid.Column="1" Grid.Row="1" TextAlignment="Center" Text ="" FontSize="15"></TextBlock>
+                    <TextBlock Grid.Column="2" Grid.Row="1" TextAlignment="Center" FontSize="15" Text ="{Binding SecondPlayerScore, RelativeSource={RelativeSource FindAncestor, AncestorType=Window},UpdateSourceTrigger=PropertyChanged}" ></TextBlock>
+
+                </Grid>
             </StackPanel>
         </Grid>
     </Grid>

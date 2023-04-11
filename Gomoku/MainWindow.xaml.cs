@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using Gomoku.GUI.ViewModels;
 using Gomoku.Logic;
 
@@ -10,22 +14,61 @@ namespace Gomoku.GUI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private readonly int _boardWidth;
         private readonly int _boardHeight;
         private readonly IEnumerable<Player> _players;
+        private int _secondPlayerScore;
+        private int _firstPlayerScore;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string FirstPlayerName { get; set; }
+
+        public string SecondPlayerName { get; set; }
+
+        public int FirstPlayerScore
+        {
+            get => _firstPlayerScore;
+            set
+            {
+                if (_firstPlayerScore != value)
+                {
+                    _firstPlayerScore = value;
+                    OnPropertyChanged(nameof(FirstPlayerScore));
+                }
+            }
+        }
+
+        public int SecondPlayerScore
+        {
+            get => _secondPlayerScore;
+            set
+            {
+                if (_secondPlayerScore != value)
+                {
+                    _secondPlayerScore = value;
+                    OnPropertyChanged(nameof(SecondPlayerScore));
+                }
+            }
+        }
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public MainWindow() :
             this(15, 15,
             new List<Player>()
             {
-                new Player("p1", new Piece(Pieces.X), false),
-                new Player("p2", new Piece(Pieces.Y), false)
+                new Player("P1", new Piece(Pieces.X), false),
+                new Player("P2", new Piece(Pieces.Y), false)
             })
         {
 
         }
+
         public BoardViewModel Board { get; set; }
         public Game Game { get; set; }
 
@@ -35,10 +78,13 @@ namespace Gomoku.GUI
             Game = new Game(boardHeight, boardWidth, players);
             Board = new BoardViewModel(Game);
 
+
             Initialize(boardHeight, boardWidth);
             _boardWidth = boardWidth;
             _boardHeight = boardHeight;
             _players = players;
+            FirstPlayerName = players.First().PlayerName;
+            SecondPlayerName = players.Last().PlayerName;
         }
 
         private void Initialize(int width, int height)
@@ -115,10 +161,26 @@ namespace Gomoku.GUI
             }
 
             if (sender is Button { DataContext: TileViewModel tile }) Game.Play(tile.Tile.X, tile.Tile.Y);
+
+            FirstPlayerScore = Game.FirstPlayerScore;
+            SecondPlayerScore = Game.SecondPlayerScore;
         }
 
         private void Restart(object sender, RoutedEventArgs e)
         {
+            Storyboard fadeInStoryboard = (Storyboard)RestartGame.Resources["FadeInStoryboard"];
+            Storyboard fadeOutStoryboard = (Storyboard)RestartGame.Resources["FadeOutStoryboard"];
+
+            // Start the fade-in animation on the grid
+            fadeInStoryboard.Begin(myGrid);
+
+            // Delay the fade-out animation by 1.5 seconds
+            Task.Delay(1500).ContinueWith(_ =>
+            {
+                // Start the fade-out animation on the grid
+                fadeOutStoryboard.Begin(myGrid);
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+
             Game.RestartGame();
         }
     }
