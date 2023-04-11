@@ -29,5 +29,23 @@ namespace Gomoku.Logic
             }
         }
 
+        public Board(Board board)
+        {
+            Width = board.Width;
+            Height = board.Height;
+            _tiles = new Tile[Width, Height];
+            for (var i = 0; i < Width; i++)
+            {
+                for (var j = 0; j < Height; j++)
+                {
+                    _tiles[i, j] = new Tile(i, j, board[i, j].Piece);
+                }
+            }
+        }
+
+        public Board DeepClone()
+        {
+            return new Board(this);
+        }
     }
 }

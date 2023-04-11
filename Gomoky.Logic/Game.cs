@@ -2,31 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media.Media3D;
 
 namespace Gomoku.Logic
 {
-    /// <summary>
-    /// Represents the objects related to <see cref="Game.UpdateBoard"/> event.
-    /// </summary>
-    public class UpdateBoardEvent : EventArgs
-    {
-        public Tile Tile { get; }
-        public UpdateBoardEvent(Tile tile)
-        {
-            Tile = tile;
-        }
-    }
-
-    public class ResetBoardEvent : EventArgs
-    {
-        public ResetBoardEvent() { }
-    }
-
     public class Game
     {
         private readonly int _width;
         private readonly int _height;
 
+        public List<Tile> MoveHistory;
         public Board Board { get; set; }
 
         /// <summary>
@@ -46,7 +31,20 @@ namespace Gomoku.Logic
             IsOver = false;
             _width = width;
             _height = height;
+            MoveHistory = new List<Tile>();
             var enumerable = players as Player[] ?? players.ToArray();
+            Players = enumerable;
+            CurrentPlayer = enumerable.First();
+        }
+
+        public Game(Game game)
+        {
+            MoveHistory = game.MoveHistory;
+            Board = new Board(game.Board.DeepClone());
+            IsOver = false;
+            _width = game._width;
+            _height = game._height;
+            var enumerable = game.Players as Player[] ?? game.Players.ToArray();
             Players = enumerable;
             CurrentPlayer = enumerable.First();
         }
@@ -80,7 +78,9 @@ namespace Gomoku.Logic
                 MessageBox.Show("Winner");
             }
 
-            if (CurrentPlayer.GomokuAi != null && CurrentPlayer.GomokuAi.GetType() == typeof(GomokuBase))
+            MoveHistory.Add(tile);
+
+            if (CurrentPlayer.GomokuAi != null && CurrentPlayer.GomokuAi.GetType() == typeof(IGomokuBase))
             {
                 var move = CurrentPlayer.GomokuAi.Analyze();
                 Play(move.Item1, move.Item2);
@@ -172,6 +172,11 @@ namespace Gomoku.Logic
                 }
             }
             ResetBoard?.Invoke(this, new ResetBoardEvent());
+        }
+
+        public Game DeepClone()
+        {
+            return new Game(this);
         }
     }
 }

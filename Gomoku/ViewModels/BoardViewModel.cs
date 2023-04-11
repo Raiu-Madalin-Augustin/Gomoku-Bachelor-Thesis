@@ -35,18 +35,16 @@ namespace Gomoku.GUI.ViewModels
             }
             HighlightedTiles = new ObservableCollection<TileViewModel>();
             HighlightedTiles.CollectionChanged += OnHighlightedTilesChanged;
-            game.UpdateBoard += UpdateBoard;
+            game.UpdateBoard += UpdateBoard!;
             game.ResetBoard += ResetHighlitedTiled;
         }
 
         private void OnHighlightedTilesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add)
+            if (e.Action != NotifyCollectionChangedAction.Add) return;
+            foreach (TileViewModel item in e.NewItems!)
             {
-                foreach (TileViewModel item in e.NewItems)
-                {
-                    item.IsHighlighted = true;
-                }
+                item.IsHighlighted = true;
             }
         }
 
