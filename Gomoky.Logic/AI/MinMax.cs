@@ -55,7 +55,14 @@ namespace Gomoku.Logic.AI
 
             }
 
-            return Tuple.Create(0, 0);
+            var choices =
+                (from evaluation in evaluations
+                 select evaluation.Item1)
+                .ToList();
+
+            // Randomly pick one result from the choices
+            var choice = new Random().Next(choices.Count);
+            return choices[choice];
         }
 
 
@@ -85,12 +92,12 @@ namespace Gomoku.Logic.AI
         {
             if (depth == 0)
             {
-                return EvaluateGame(game, move, player);
+                return EvaluateGame(game, move, player, game.Players.FirstOrDefault(x => x.PlayerName != game.CurrentPlayer.PlayerName));
             }
 
             if (game.IsOver)
             {
-                return EvaluateGame(game, move, player);
+                return EvaluateGame(game, move, player, game.CurrentPlayer);
             }
 
             var possibleMoves = GetPossibleMoves(game.Board);
@@ -115,8 +122,10 @@ namespace Gomoku.Logic.AI
                         maxValue = child;
                         break;
                     }
+
                     maxValue = Math.Max(maxValue, child);
                     alpha = Math.Max(alpha, child);
+
                     if (beta <= alpha)
                     {
                         break;
@@ -124,13 +133,50 @@ namespace Gomoku.Logic.AI
                 }
                 value = maxValue;
             }
-            return 0;
+            else
+            {
+                var minValue = double.MaxValue;
 
+                foreach (var position in possibleMoves)
+                {
+                    game.Play(position.Item1, position.Item2);
+
+                    var child = MinMaxEvaluate(game, position, player, depth - 1, alpha, beta, true);
+
+                    //game.Undo();
+
+                    if (child == double.MaxValue)
+                    {
+                        minValue = child;
+                        break;
+                    }
+
+                    minValue = Math.Min(minValue, child);
+                    beta = Math.Min(beta, child);
+
+                    if (beta <= alpha)
+                    {
+                        break;
+                    }
+                }
+
+                value = minValue;
+            }
+
+            value += EvaluateGame(game, move, player, game.Players.FirstOrDefault(x => x.PlayerName != game.CurrentPlayer.PlayerName));
+            return value;
         }
 
-        private double EvaluateGame(Game game, Tuple<int, int> move, Player player)
+        private double EvaluateGame(Game game, Tuple<int, int> move, Player player, Player versus)
         {
-            throw new NotImplementedException();
+            var value = 0;
+
+            if (player != versus)
+            {
+                value = -value;
+            }
+
+            return value;
         }
     }
 }
