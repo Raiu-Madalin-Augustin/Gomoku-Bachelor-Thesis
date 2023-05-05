@@ -9,10 +9,12 @@ namespace Gomoku.Logic.AI
     public class MinMax : IGomokuBase
     {
         private readonly Game _gameCopy;
+        public int Level { get; set; }
 
-        public MinMax(Game gameCopy)
+        public MinMax(Game gameCopy, int level)
         {
             _gameCopy = gameCopy;
+            Level = level;
         }
 
         public Tuple<int, int> Analyze()
@@ -23,10 +25,33 @@ namespace Gomoku.Logic.AI
             var possibleMoves = GetPossibleMoves(_gameCopy.Board);
 
             var max = double.MinValue;
+            var evaluations = new List<(Tuple<int, int>, double value)>();
 
             foreach (var possibleMove in possibleMoves)
             {
-                _gameCopy.Play(possibleMove[0], possibleMove[1]);
+                _gameCopy.Play(possibleMove.Item1, possibleMove.Item2);
+
+                var value = MinMaxEvaluate(_gameCopy, new Tuple<int, int>(possibleMove.Item1, possibleMove.Item2),
+                    _gameCopy.CurrentPlayer, Level, isMaximizing: false);
+
+                //if it reached max val , no need for further evaluations
+                if (value == double.MaxValue)
+                {
+                    return Tuple.Create(possibleMove.Item1, possibleMove.Item2);
+                }
+
+                if (value > max)
+                {
+                    evaluations.Clear();
+                    evaluations.Add((possibleMove, value));
+                    max = value;
+                }
+                else if (value == max)
+                {
+                    evaluations.Add((possibleMove, value));
+                }
+
+                //ToDo, undo
 
             }
 
@@ -34,9 +59,9 @@ namespace Gomoku.Logic.AI
         }
 
 
-        public List<int[]> GetPossibleMoves(Board board)
+        public List<Tuple<int, int>> GetPossibleMoves(Board board)
         {
-            var possibleMoves = new List<int[]>();
+            var possibleMoves = new List<Tuple<int, int>>();
             var rows = board.Height;
             var cols = board.Width;
 
@@ -47,7 +72,7 @@ namespace Gomoku.Logic.AI
                 {
                     if (board[i, j].Piece == Pieces.None)
                     {
-                        possibleMoves.Add(new int[] { i, j });
+                        possibleMoves.Add(new Tuple<int, int>(i, j));
                     }
                 }
             }
@@ -78,12 +103,26 @@ namespace Gomoku.Logic.AI
 
                 foreach (var position in possibleMoves)
                 {
-                    var tile = game.Board[position[0], position[1]];
+                    var tile = game.Board[position.Item1, position.Item2];
                     game.Play(tile.X, tile.Y);
                     var child = MinMaxEvaluate(game, new Tuple<int, int>(tile.X, tile.Y), player, depth - 1, alpha,
                         beta, false);
-                }
 
+                    //game.Undo();
+
+                    if (child == double.MinValue)
+                    {
+                        maxValue = child;
+                        break;
+                    }
+                    maxValue = Math.Max(maxValue, child);
+                    alpha = Math.Max(alpha, child);
+                    if (beta <= alpha)
+                    {
+                        break;
+                    }
+                }
+                value = maxValue;
             }
             return 0;
 
