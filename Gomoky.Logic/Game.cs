@@ -11,7 +11,7 @@ namespace Gomoku.Logic
         private readonly int _width;
         private readonly int _height;
 
-        public List<Tile> MoveHistory;
+        public Stack<Tile> MoveHistory;
         public Board Board { get; set; }
 
         public int FirstPlayerScore { get; set; }
@@ -25,6 +25,7 @@ namespace Gomoku.Logic
         public Player CurrentPlayer { get; set; }
 
         public event EventHandler<UpdateBoardEvent>? UpdateBoard;
+        public event EventHandler<MoveMadeEvent>? MoveMade;
         public event EventHandler<ResetBoardEvent>? ResetBoard;
 
 
@@ -34,7 +35,7 @@ namespace Gomoku.Logic
             IsOver = false;
             _width = width;
             _height = height;
-            MoveHistory = new List<Tile>();
+            MoveHistory = new Stack<Tile>();
             var enumerable = players as Player[] ?? players.ToArray();
             Players = enumerable;
             CurrentPlayer = enumerable.First();
@@ -57,7 +58,7 @@ namespace Gomoku.Logic
         {
             if (IsOver)
             {
-               
+
                 return;
             }
             var tile = Board[x, y];
@@ -71,12 +72,15 @@ namespace Gomoku.Logic
             tile.Piece = currentPlayerData.Piece;
 
             CurrentPlayer = CurrentPlayer == currentPlayerData ? Players.FirstOrDefault(player => player != CurrentPlayer)! : currentPlayerData;
+            MoveHistory.Push(tile);
             UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
 
             if (CheckIfGameIsOver(_height, _width, tile.Piece))
             {
                 IsOver = true;
             }
+
+            MoveMade?.Invoke(this, new MoveMadeEvent());
 
             if (IsOver)
             {
@@ -88,16 +92,14 @@ namespace Gomoku.Logic
                 {
                     SecondPlayerScore += 1;
                 }
-                MessageBox.Show("Winner");
+                //MessageBox.Show("Winner");
             }
 
-            MoveHistory.Add(tile);
-
-            if (CurrentPlayer.GomokuAi != null && CurrentPlayer.GomokuAi.GetType() == typeof(IGomokuBase))
-            {
-                var move = CurrentPlayer.GomokuAi.Analyze();
-                Play(move.Item1, move.Item2);
-            }
+            //if (CurrentPlayer.GomokuAi != null)
+            //{
+            //    var move = CurrentPlayer.GomokuAi.Analyze(this);
+            //    Play(move.Item1, move.Item2);
+            //}
         }
 
 

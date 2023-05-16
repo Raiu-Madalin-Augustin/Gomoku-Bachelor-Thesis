@@ -8,17 +8,19 @@ namespace Gomoku.Logic.AI
 {
     public class MinMax : IGomokuBase
     {
-        private readonly Game _gameCopy;
-        public int Level { get; set; }
+        private Game _gameCopy;
+        private IEvaluator _evaluator { get; set; }
 
-        public MinMax(Game gameCopy, int level)
+        public int Level { get; set; }
+        public MinMax()
         {
-            _gameCopy = gameCopy;
-            Level = level;
+            Level = 1;
+            _evaluator = new Evaluator();
         }
 
-        public Tuple<int, int> Analyze()
+        public Tuple<int, int> Analyze(Game game)
         {
+            _gameCopy = game.DeepClone();
             if (_gameCopy.IsOver)
                 return Tuple.Create(-1, -1);
 
@@ -169,9 +171,9 @@ namespace Gomoku.Logic.AI
 
         private double EvaluateGame(Game game, Tuple<int, int> move, Player player, Player versus)
         {
-            var value = 0;
+            var value = _evaluator.Evaluate(game, move, player.Piece, versus.Piece);
 
-            if (player != versus)
+            if (player.Piece.TypeIndex != versus.Piece.TypeIndex)
             {
                 value = -value;
             }

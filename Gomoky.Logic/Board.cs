@@ -47,5 +47,10 @@ namespace Gomoku.Logic
         {
             return new Board(this);
         }
+
+        public bool IsValidPosition(Tuple<int,int> position)
+        {
+            return position.Item1 >= 0 && position.Item1 < Width && position.Item2 >= 0 && position.Item2 < Height;
+        }
     }
 }

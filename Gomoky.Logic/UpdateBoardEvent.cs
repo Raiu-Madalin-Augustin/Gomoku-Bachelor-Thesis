@@ -13,3 +13,11 @@ public class UpdateBoardEvent : EventArgs
         Tile = tile;
     }
 }
+
+public class MoveMadeEvent : EventArgs
+{
+    public MoveMadeEvent()
+    {
+    }
+}
+

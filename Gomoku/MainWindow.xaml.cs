@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -8,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using Gomoku.GUI.ViewModels;
 using Gomoku.Logic;
+using Gomoku.Logic.AI;
 
 namespace Gomoku.GUI
 {
@@ -63,7 +66,7 @@ namespace Gomoku.GUI
             new List<Player>()
             {
                 new Player("P1", new Piece(Pieces.X), false),
-                new Player("P2", new Piece(Pieces.Y), false)
+                new Player("P2", new Piece(Pieces.Y),new MinMax(), false)
             })
         {
 
@@ -77,6 +80,8 @@ namespace Gomoku.GUI
             InitializeComponent();
             Game = new Game(boardHeight, boardWidth, players);
             Board = new BoardViewModel(Game);
+
+            Game.MoveMade += Board_BoardChangedAsync;
 
 
             Initialize(boardHeight, boardWidth);
@@ -182,6 +187,42 @@ namespace Gomoku.GUI
             }, TaskScheduler.FromCurrentSynchronizationContext());
 
             Game.RestartGame();
+        }
+
+        private async void Board_BoardChangedAsync(object sender, MoveMadeEvent e)
+        {
+            // AI
+            if (Game is { IsOver: false, CurrentPlayer.GomokuAi: { } })
+            {
+                await RunAI();
+            }
+        }
+
+        private async Task RunAI()
+        {
+            Tuple<int, int> tile = await AIPlayAsync();
+            if (tile is null)
+            {
+                return;
+            }
+            Game.Play(tile.Item1, tile.Item2);
+        }
+        private async Task<Tuple<int, int>?> AIPlayAsync(bool showAnalysis = false)
+        {
+            var player = Game.CurrentPlayer;
+
+
+            var sw = Stopwatch.StartNew();
+            var result = await Task.Run(() => player.GomokuAi?.Analyze(Game));
+            sw.Stop();
+            if (sw.ElapsedMilliseconds < 500)
+            {
+                var delay = 500 - sw.ElapsedMilliseconds;
+                await Task.Delay((int)delay);
+            }
+
+
+            return result;
         }
     }
 }

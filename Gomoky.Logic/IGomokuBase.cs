@@ -8,6 +8,6 @@ namespace Gomoku.Logic
 {
     public interface IGomokuBase
     {
-        public Tuple<int, int> Analyze();
+        public Tuple<int, int> Analyze(Game game);
     }
 }
