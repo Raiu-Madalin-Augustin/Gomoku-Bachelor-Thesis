@@ -6,9 +6,28 @@ using System.Threading.Tasks;
 
 namespace Gomoku.Logic.AI
 {
+    public enum Orientations
+    {
+        None = 0,
+        Horizontal = 1,
+        Vertical = 2,
+        Diagonal = 3,
+        SecondDiagonal = 4
+    }
+
+    public enum Directions
+    {
+        UpRight = 0,
+        UpLeft = 1,
+        DownRight = 2,
+        DownLeft = 3,
+        Left = 4,
+        Right = 5,
+        Up = 6,
+        Down = 7
+    }
     public class MinMax : IGomokuBase
     {
-        private Game _gameCopy;
         private IEvaluator _evaluator { get; set; }
 
         public int Level { get; set; }
@@ -20,26 +39,31 @@ namespace Gomoku.Logic.AI
 
         public Tuple<int, int> Analyze(Game game)
         {
-            _gameCopy = game.DeepClone();
-            if (_gameCopy.IsOver)
+            if (game.IsOver)
                 return Tuple.Create(-1, -1);
 
-            var possibleMoves = GetPossibleMoves(_gameCopy.Board);
+            if (game.MoveHistory.Count == 0)
+            {
+                var tile = game.Board[game.Board.Width / 2, game.Board.Height / 2];
+                return Tuple.Create(tile.X, tile.Y);
+            }
+
+            var forPlayer = game.CurrentPlayer;
+            var possibleMoves = GetPossibleMoves(game.Board);
 
             var max = double.MinValue;
             var evaluations = new List<(Tuple<int, int>, double value)>();
 
             foreach (var possibleMove in possibleMoves)
             {
-                _gameCopy.Play(possibleMove.Item1, possibleMove.Item2);
+                game.Play(possibleMove.Item1, possibleMove.Item2);
 
-                var value = MinMaxEvaluate(_gameCopy, new Tuple<int, int>(possibleMove.Item1, possibleMove.Item2),
-                    _gameCopy.CurrentPlayer, Level, isMaximizing: false);
+                var value = MinMaxEvaluate(game, possibleMove, forPlayer, Level, isMaximizing: false);
 
                 //if it reached max val , no need for further evaluations
                 if (value == double.MaxValue)
                 {
-                    return Tuple.Create(possibleMove.Item1, possibleMove.Item2);
+                    return possibleMove;
                 }
 
                 if (value > max)
@@ -54,7 +78,7 @@ namespace Gomoku.Logic.AI
                 }
 
                 //ToDo, undo
-
+                game.Undo();
             }
 
             var choices =
@@ -79,7 +103,7 @@ namespace Gomoku.Logic.AI
             {
                 for (var j = 0; j < cols; j++)
                 {
-                    if (board[i, j].Piece == Pieces.None)
+                    if (board[i, j].Piece.TypeIndex == 0)
                     {
                         possibleMoves.Add(new Tuple<int, int>(i, j));
                     }
@@ -89,12 +113,76 @@ namespace Gomoku.Logic.AI
             return possibleMoves;
         }
 
+        public List<Tuple<int, int>> GetPossibleMoves(Game game, int maxDistance = 2, int tolerance = 1)
+        {
+            var unnavailableTiles = game.MoveHistory;
+
+            var potentialTiles = new HashSet<Tuple<int, int>>();
+
+            foreach (var tile in unnavailableTiles)
+            {
+                var orientations = new[]
+                {
+                    Orientations.Diagonal,
+                    Orientations.Horizontal,
+                    Orientations.SecondDiagonal,
+                    Orientations.Vertical
+                };
+
+                foreach (var orientation in orientations)
+                {
+                    foreach (var t in GetMovesInDirection(game.Board, orientation, tile, maxDistance: maxDistance, tolerance))
+                    {
+                        potentialTiles.Add(Tuple.Create(t.X, t.Y));
+                    }
+                }
+            }
+
+            return potentialTiles.ToList();
+        }
+
+        private IEnumerable<Tile> GetMovesInDirection(Board board, Orientations orientation, Tile tile, int maxDistance, int tolerance)
+        {
+            var sameTiles = new Queue<Tile>();
+
+            return orientation switch
+            {
+                Orientations.Horizontal => CombineLines(
+                    GetLine(board, tile, Pieces.None, Directions.Left, maxDistance, tolerance),
+                    GetLine(board, tile, Pieces.None, Directions.Right, maxDistance, tolerance)),
+                Orientations.Diagonal => CombineLines(
+                    GetLine(board, tile, Pieces.None, Directions.UpLeft, maxDistance, tolerance),
+                    GetLine(board, tile, Pieces.None, Directions.DownRight, maxDistance, tolerance)
+                    ),
+                Orientations.Vertical => CombineLines(
+                    GetLine(board, tile, Pieces.None, Directions.Up, maxDistance, tolerance),
+                    GetLine(board, tile, Pieces.None, Directions.Down, maxDistance, tolerance)
+                    ),
+                Orientations.SecondDiagonal => CombineLines(
+                    GetLine(board, tile, Pieces.None, Directions.UpRight, maxDistance, tolerance),
+                    GetLine(board, tile, Pieces.None, Directions.DownLeft, maxDistance, tolerance)
+                    )
+            };
+
+        }
+
+        private static IEnumerable<Tile> GetLine(Board board, Tile tile, Pieces none, Directions upRight, int maxDistance, int tolerance)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static IEnumerable<Tile> CombineLines(IEnumerable<Tile> firstLine, IEnumerable<Tile> secondLine)
+        {
+            return firstLine.ToList().Concat(secondLine.ToList());
+        }
+
+
         public double MinMaxEvaluate(Game game, Tuple<int, int> move, Player player, int depth,
             double alpha = double.MinValue, double beta = double.MaxValue, bool isMaximizing = true)
         {
             if (depth == 0)
             {
-                return EvaluateGame(game, move, player, game.Players.FirstOrDefault(x => x.PlayerName != game.CurrentPlayer.PlayerName));
+                return EvaluateGame(game, move, player, game.Players.First(x => x.Piece.TypeIndex != game.CurrentPlayer.Piece.TypeIndex));
             }
 
             if (game.IsOver)
@@ -117,7 +205,7 @@ namespace Gomoku.Logic.AI
                     var child = MinMaxEvaluate(game, new Tuple<int, int>(tile.X, tile.Y), player, depth - 1, alpha,
                         beta, false);
 
-                    //game.Undo();
+                    game.Undo();
 
                     if (child == double.MinValue)
                     {
@@ -145,7 +233,7 @@ namespace Gomoku.Logic.AI
 
                     var child = MinMaxEvaluate(game, position, player, depth - 1, alpha, beta, true);
 
-                    //game.Undo();
+                    game.Undo();
 
                     if (child == double.MaxValue)
                     {
@@ -165,7 +253,7 @@ namespace Gomoku.Logic.AI
                 value = minValue;
             }
 
-            value += EvaluateGame(game, move, player, game.Players.FirstOrDefault(x => x.PlayerName != game.CurrentPlayer.PlayerName));
+            value += EvaluateGame(game, move, player, game.Players.FirstOrDefault(x => x.Piece.TypeIndex != game.CurrentPlayer.Piece.TypeIndex));
             return value;
         }
 

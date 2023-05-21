@@ -25,6 +25,7 @@ namespace Gomoku.Logic
         public Player CurrentPlayer { get; set; }
 
         public event EventHandler<UpdateBoardEvent>? UpdateBoard;
+        public event EventHandler<UpdateBoardEvent>? UndoMove;
         public event EventHandler<MoveMadeEvent>? MoveMade;
         public event EventHandler<ResetBoardEvent>? ResetBoard;
 
@@ -51,7 +52,7 @@ namespace Gomoku.Logic
             _height = game._height;
             var enumerable = game.Players as Player[] ?? game.Players.ToArray();
             Players = enumerable;
-            CurrentPlayer = enumerable.First();
+            CurrentPlayer = game.CurrentPlayer;
         }
 
         public void Play(int x, int y)
@@ -68,10 +69,10 @@ namespace Gomoku.Logic
                 return;
             }
 
-            var currentPlayerData = Players.FirstOrDefault(player => player == CurrentPlayer)!;
+            var currentPlayerData = Players.FirstOrDefault(player => player.Piece.TypeIndex == CurrentPlayer.Piece.TypeIndex);
             tile.Piece = currentPlayerData.Piece;
 
-            CurrentPlayer = CurrentPlayer == currentPlayerData ? Players.FirstOrDefault(player => player != CurrentPlayer)! : currentPlayerData;
+            CurrentPlayer = CurrentPlayer == currentPlayerData ? Players.FirstOrDefault(player => player.PlayerName != CurrentPlayer.PlayerName)! : currentPlayerData;
             MoveHistory.Push(tile);
             UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
 
@@ -192,6 +193,26 @@ namespace Gomoku.Logic
         public Game DeepClone()
         {
             return new Game(this);
+        }
+
+        public void Undo()
+        {
+            if (MoveHistory.Count <= 0)
+            {
+                return;
+            }
+
+            var removedTile = MoveHistory.Pop();
+
+            UndoMove?.Invoke(this, new UpdateBoardEvent(removedTile));
+
+
+            if (IsOver)
+            {
+                IsOver = false;
+            }
+
+            MoveMade?.Invoke(this, new MoveMadeEvent());
         }
     }
 }

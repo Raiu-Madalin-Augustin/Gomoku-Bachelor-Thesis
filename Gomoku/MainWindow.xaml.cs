@@ -194,26 +194,26 @@ namespace Gomoku.GUI
             // AI
             if (Game is { IsOver: false, CurrentPlayer.GomokuAi: { } })
             {
-                await RunAI();
+                await RunAi();
             }
         }
 
-        private async Task RunAI()
+        private async Task RunAi()
         {
-            Tuple<int, int> tile = await AIPlayAsync();
+            var tile = await AiPlayAsync();
             if (tile is null)
             {
                 return;
             }
             Game.Play(tile.Item1, tile.Item2);
         }
-        private async Task<Tuple<int, int>?> AIPlayAsync(bool showAnalysis = false)
+        private async Task<Tuple<int, int>?> AiPlayAsync(bool showAnalysis = false)
         {
             var player = Game.CurrentPlayer;
 
 
             var sw = Stopwatch.StartNew();
-            var result = await Task.Run(() => player.GomokuAi?.Analyze(Game));
+            var result = await Task.Run(() => player.GomokuAi?.Analyze(Game.DeepClone()));
             sw.Stop();
             if (sw.ElapsedMilliseconds < 500)
             {

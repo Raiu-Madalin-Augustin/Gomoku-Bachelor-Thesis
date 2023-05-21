@@ -36,6 +36,7 @@ namespace Gomoku.GUI.ViewModels
             HighlightedTiles = new ObservableCollection<TileViewModel>();
             HighlightedTiles.CollectionChanged += OnHighlightedTilesChanged;
             game.UpdateBoard += UpdateBoard!;
+            game.UndoMove += UndoMove;
             game.ResetBoard += ResetHighlitedTiled;
         }
 
@@ -55,6 +56,12 @@ namespace Gomoku.GUI.ViewModels
             tile.Piece = e.Tile.Piece;
 
             HighlightedTiles.Add(tile);
+        }
+
+        private void UndoMove(object? sender, UpdateBoardEvent e)
+        {
+            TileViewModel tile = this[e.Tile.X, e.Tile.Y];
+            HighlightedTiles.Remove(tile);
         }
 
         private void ResetHighlitedTiled(object? sender, ResetBoardEvent e)
