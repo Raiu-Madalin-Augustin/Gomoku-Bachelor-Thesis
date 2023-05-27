@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Gomoku.Logic;
 
 namespace Gomoku.GUI.ViewModels
@@ -52,7 +47,7 @@ namespace Gomoku.GUI.ViewModels
         private void UpdateBoard(object sender, UpdateBoardEvent e)
         {
 
-            TileViewModel tile = this[e.Tile.X, e.Tile.Y];
+            var tile = this[e.Tile.X, e.Tile.Y];
             tile.Piece = e.Tile.Piece;
 
             HighlightedTiles.Add(tile);
@@ -60,13 +55,13 @@ namespace Gomoku.GUI.ViewModels
 
         private void UndoMove(object? sender, UpdateBoardEvent e)
         {
-            TileViewModel tile = this[e.Tile.X, e.Tile.Y];
+            var tile = this[e.Tile.X, e.Tile.Y];
             HighlightedTiles.Remove(tile);
         }
 
         private void ResetHighlitedTiled(object? sender, ResetBoardEvent e)
         {
-            foreach (TileViewModel item in HighlightedTiles)
+            foreach (var item in HighlightedTiles)
             {
                 item.IsHighlighted = false;
 

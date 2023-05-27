@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Media3D;
+using Gomoku.Logic.AI;
 
 namespace Gomoku.Logic
 {
@@ -76,7 +77,7 @@ namespace Gomoku.Logic
             MoveHistory.Push(tile);
             UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
 
-            if (CheckIfGameIsOver(_height, _width, tile.Piece))
+            if (CheckGameOver(tile.X, tile.Y))
             {
                 IsOver = true;
             }
@@ -96,14 +97,45 @@ namespace Gomoku.Logic
                 //MessageBox.Show("Winner");
             }
 
-            //if (CurrentPlayer.GomokuAi != null)
-            //{
-            //    var move = CurrentPlayer.GomokuAi.Analyze(this);
-            //    Play(move.Item1, move.Item2);
-            //}
         }
 
+        public bool CheckGameOver(int x, int y)
+        {
+            if (MoveHistory.Count < 9)
+            {
+                return false;
+            }
 
+            var tile = Board[x, y];
+
+            if (tile.Piece.TypeIndex != 0)
+            {
+                var orientations = new[]
+                {
+                    Orientations.Horizontal,
+                    Orientations.Vertical,
+                    Orientations.Diagonal,
+                    Orientations.SecondDiagonal
+                };
+
+                foreach (var orientation in orientations)
+                {
+                    var tiles = StaticMethods.GetBlockedAndSameTiles(Board, tile, tile.Piece, orientation, 5, 0);
+
+                    var sameCounter = tiles.Item1.Count();
+                    var blockedCounter = tiles.Item2.Count();
+
+                    if (tiles.Item3
+                        && sameCounter + 1 == 5
+                        && blockedCounter < 2)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
         private bool CheckIfGameIsOver(int x, int y, Pieces piece)
         {
 

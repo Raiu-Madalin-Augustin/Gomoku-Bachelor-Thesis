@@ -17,5 +17,11 @@ namespace Gomoku.Logic
             Y = y;
             Piece = piece;
         }
+        public Tile(int x, int y)
+        {
+            X = x;
+            Y = y;
+            Piece = new Piece();
+        }
     }
 }

@@ -49,7 +49,7 @@ namespace Gomoku.Logic.AI
             }
 
             var forPlayer = game.CurrentPlayer;
-            var possibleMoves = GetPossibleMoves(game.Board);
+            var possibleMoves = GetPossibleMoves(game);
 
             var max = double.MinValue;
             var evaluations = new List<(Tuple<int, int>, double value)>();
@@ -77,7 +77,6 @@ namespace Gomoku.Logic.AI
                     evaluations.Add((possibleMove, value));
                 }
 
-                //ToDo, undo
                 game.Undo();
             }
 
@@ -91,27 +90,6 @@ namespace Gomoku.Logic.AI
             return choices[choice];
         }
 
-
-        public List<Tuple<int, int>> GetPossibleMoves(Board board)
-        {
-            var possibleMoves = new List<Tuple<int, int>>();
-            var rows = board.Height;
-            var cols = board.Width;
-
-            // Iterate through each cell on the board and check if it's empty
-            for (var i = 0; i < rows; i++)
-            {
-                for (var j = 0; j < cols; j++)
-                {
-                    if (board[i, j].Piece.TypeIndex == 0)
-                    {
-                        possibleMoves.Add(new Tuple<int, int>(i, j));
-                    }
-                }
-            }
-
-            return possibleMoves;
-        }
 
         public List<Tuple<int, int>> GetPossibleMoves(Game game, int maxDistance = 2, int tolerance = 1)
         {
@@ -131,7 +109,7 @@ namespace Gomoku.Logic.AI
 
                 foreach (var orientation in orientations)
                 {
-                    foreach (var t in GetMovesInDirection(game.Board, orientation, tile, maxDistance: maxDistance, tolerance))
+                    foreach (var t in GetEmptyMovesInDirection(game.Board, orientation, tile, maxDistance: maxDistance, tolerance))
                     {
                         potentialTiles.Add(Tuple.Create(t.X, t.Y));
                     }
@@ -141,44 +119,38 @@ namespace Gomoku.Logic.AI
             return potentialTiles.ToList();
         }
 
-        private IEnumerable<Tile> GetMovesInDirection(Board board, Orientations orientation, Tile tile, int maxDistance, int tolerance)
+        private static IEnumerable<Tile> GetEmptyMovesInDirection(Board board, Orientations orientation, Tile tile, int maxDistance, int tolerance)
         {
-            var sameTiles = new Queue<Tile>();
-
             return orientation switch
             {
-                Orientations.Horizontal => CombineLines(
-                    GetLine(board, tile, Pieces.None, Directions.Left, maxDistance, tolerance),
-                    GetLine(board, tile, Pieces.None, Directions.Right, maxDistance, tolerance)),
-                Orientations.Diagonal => CombineLines(
-                    GetLine(board, tile, Pieces.None, Directions.UpLeft, maxDistance, tolerance),
-                    GetLine(board, tile, Pieces.None, Directions.DownRight, maxDistance, tolerance)
+                Orientations.Horizontal => StaticMethods.CombineLines(
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.Left, maxDistance, tolerance).Item1,
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.Right, maxDistance, tolerance).Item1),
+                Orientations.Diagonal => StaticMethods.CombineLines(
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.UpLeft, maxDistance, tolerance).Item1,
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.DownRight, maxDistance, tolerance).Item1
                     ),
-                Orientations.Vertical => CombineLines(
-                    GetLine(board, tile, Pieces.None, Directions.Up, maxDistance, tolerance),
-                    GetLine(board, tile, Pieces.None, Directions.Down, maxDistance, tolerance)
+                Orientations.Vertical => StaticMethods.CombineLines(
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.Up, maxDistance, tolerance).Item1,
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.Down, maxDistance, tolerance).Item1
                     ),
-                Orientations.SecondDiagonal => CombineLines(
-                    GetLine(board, tile, Pieces.None, Directions.UpRight, maxDistance, tolerance),
-                    GetLine(board, tile, Pieces.None, Directions.DownLeft, maxDistance, tolerance)
-                    )
+                Orientations.SecondDiagonal => StaticMethods.CombineLines(
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.UpRight, maxDistance, tolerance).Item1,
+                    StaticMethods.GetLine(board, tile, Pieces.None, Directions.DownLeft, maxDistance, tolerance).Item1
+                    ),
+                Orientations.None => throw new NotImplementedException(),
+                _ => throw new NotImplementedException()
             };
 
         }
-
-        private static IEnumerable<Tile> GetLine(Board board, Tile tile, Pieces none, Directions upRight, int maxDistance, int tolerance)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static IEnumerable<Tile> CombineLines(IEnumerable<Tile> firstLine, IEnumerable<Tile> secondLine)
-        {
-            return firstLine.ToList().Concat(secondLine.ToList());
-        }
-
-
-        public double MinMaxEvaluate(Game game, Tuple<int, int> move, Player player, int depth,
-            double alpha = double.MinValue, double beta = double.MaxValue, bool isMaximizing = true)
+        
+        public double MinMaxEvaluate(Game game,
+            Tuple<int, int> move,
+            Player player,
+            int depth,
+            double alpha = double.MinValue,
+            double beta = double.MaxValue,
+            bool isMaximizing = true)
         {
             if (depth == 0)
             {
@@ -190,7 +162,7 @@ namespace Gomoku.Logic.AI
                 return EvaluateGame(game, move, player, game.CurrentPlayer);
             }
 
-            var possibleMoves = GetPossibleMoves(game.Board);
+            var possibleMoves = GetPossibleMoves(game);
 
             double value = 0;
 
