@@ -1,49 +1,52 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Gomoku.Logic;
 
 namespace Gomoku.GUI.ViewModels
 {
-    public class TileViewModel : ViewModelBase
+  /// <summary>
+  /// Defines a tile in the board
+  /// </summary>
+  public class TileViewModel : VMBase
+  {
+    private bool _isHighlighted;
+
+    private bool _isSelected;
+
+    public TileViewModel(Tile tile)
     {
-        private bool _isSelected;
-        private bool _isHighlighted;
-        public Tile Tile { get; }
-
-        public bool IsHighlighted
-        {
-            get => _isHighlighted;
-            set => Set(ref _isHighlighted, value);
-        }
-        public Piece Piece
-        {
-            get => Tile.Piece;
-            set
-            {
-                Tile.Piece = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                if (IsSelected && value == false)
-                {
-                    IsSelected = false;
-                }
-
-                Set(ref _isSelected, value);
-            }
-        }
-
-        public TileViewModel(Tile tile)
-        {
-            Tile = tile;
-        }
+      Tile = tile ?? throw new ArgumentNullException(nameof(tile));
     }
+
+    public bool IsHighlighted
+    {
+      get => _isHighlighted;
+      set
+      {
+        if (IsSelected == true && value == false)
+        {
+          IsSelected = false;
+        }
+        SetProperty(ref _isHighlighted, value);
+      }
+    }
+
+    public bool IsSelected
+    {
+      get => _isSelected;
+      set => SetProperty(ref _isSelected, value);
+    }
+
+    public Piece Piece
+    {
+      get => Tile.Piece;
+      set
+      {
+        Tile.Piece = value;
+        NotifyPropertyChanged();
+      }
+    }
+
+    public Tile Tile { get; }
+  }
 }

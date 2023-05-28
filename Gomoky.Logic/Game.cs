@@ -1,225 +1,108 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
-using System.Windows.Media.Media3D;
-using Gomoku.Logic.AI;
 
 namespace Gomoku.Logic
 {
-    public class Game
+    /// <summary>
+    /// Defines a Gomoku game
+    /// </summary>
+    public class Game : IDeepCloneable<Game>, IShallowCloneable<Game>
     {
-        private readonly int _width;
-        private readonly int _height;
-
-        public Stack<Tile> MoveHistory;
-        public Board Board { get; set; }
-
-        public int FirstPlayerScore { get; set; }
-        public int SecondPlayerScore { get; set; }
-
-        /// <summary>
-        /// Checks if the game is over.
-        /// </summary>
-        public bool IsOver { get; private set; }
-        public IEnumerable<Player> Players { get; }
-        public Player CurrentPlayer { get; set; }
-
-        public event EventHandler<UpdateBoardEvent>? UpdateBoard;
-        public event EventHandler<UpdateBoardEvent>? UndoMove;
-        public event EventHandler<MoveMadeEvent>? MoveMade;
-        public event EventHandler<ResetBoardEvent>? ResetBoard;
-
+        public static readonly int WinCondition = 5;
+        private readonly Stack<Tile> _history;
 
         public Game(int width, int height, IEnumerable<Player> players)
         {
             Board = new Board(width, height);
+            MaxMove = width * height;
+            Manager = new PlayerManager(players);
+            _history = new Stack<Tile>();
             IsOver = false;
-            _width = width;
-            _height = height;
-            MoveHistory = new Stack<Tile>();
-            var enumerable = players as Player[] ?? players.ToArray();
-            Players = enumerable;
-            CurrentPlayer = enumerable.First();
-
+            ShiftPlayersOnGameOver = true;
         }
 
-        public Game(Game game)
+        private Game(Game g)
         {
-            MoveHistory = game.MoveHistory;
-            Board = new Board(game.Board.DeepClone());
-            IsOver = false;
-            _width = game._width;
-            _height = game._height;
-            var enumerable = game.Players as Player[] ?? game.Players.ToArray();
-            Players = enumerable;
-            CurrentPlayer = game.CurrentPlayer;
+            if (g is null)
+            {
+                throw new ArgumentNullException(nameof(g));
+            }
+
+            Board = g.Board.DeepClone();
+            MaxMove = g.MaxMove;
+            Manager = g.Manager.DeepClone();
+            _history = new Stack<Tile>(g._history.Reverse());
+            IsOver = g.IsOver;
+            ShiftPlayersOnGameOver = g.ShiftPlayersOnGameOver;
         }
 
-        public void Play(int x, int y)
-        {
-            if (IsOver)
-            {
+        public event EventHandler<BoardChangedEventArgs>? BoardChanged;
 
-                return;
-            }
-            var tile = Board[x, y];
+        public event EventHandler<BoardChangingEventArgs>? BoardChanging;
 
-            if (tile.Piece.TypeIndex != ((int)Pieces.None))
-            {
-                return;
-            }
+        public event EventHandler<GameOverEventArgs>? GameOver;
 
-            var currentPlayerData = Players.FirstOrDefault(player => player.Piece.TypeIndex == CurrentPlayer.Piece.TypeIndex);
-            tile.Piece = currentPlayerData.Piece;
+        public Board Board { get; }
 
-            CurrentPlayer = CurrentPlayer == currentPlayerData ? Players.FirstOrDefault(player => player.PlayerName != CurrentPlayer.PlayerName)! : currentPlayerData;
-            MoveHistory.Push(tile);
-            UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
+        public bool CanUndo => _history.Count > 0;
 
-            if (CheckGameOver(tile.X, tile.Y))
-            {
-                IsOver = true;
-            }
+        public IReadOnlyList<Tile> History => _history.ToArray();
 
-            MoveMade?.Invoke(this, new MoveMadeEvent());
+        public bool IsOver { get; private set; }
 
-            if (IsOver)
-            {
-                if (currentPlayerData.PlayerName == Players.FirstOrDefault().PlayerName)
-                {
-                    FirstPlayerScore += 1;
-                }
-                else
-                {
-                    SecondPlayerScore += 1;
-                }
-                //MessageBox.Show("Winner");
-            }
+        public bool IsTie => _history.Count == MaxMove;
 
-        }
+        public Tile LastMove => (_history.Count == 0 ? null : _history.Peek())!;
+
+        public PlayerManager Manager { get; }
+
+        public int MaxMove { get; }
+
+        public bool ShiftPlayersOnGameOver { get; set; }
 
         public bool CheckGameOver(int x, int y)
         {
-            if (MoveHistory.Count < 9)
+            if (IsOver || IsTie)
+            {
+                return true;
+            }
+
+            if (_history.Count < 9)
             {
                 return false;
             }
 
             var tile = Board[x, y];
 
-            if (tile.Piece.TypeIndex != 0)
+            if (tile.Piece.Type != Pieces.None)
             {
                 var orientations = new[]
                 {
-                    Orientations.Horizontal,
-                    Orientations.Vertical,
-                    Orientations.Diagonal,
-                    Orientations.SecondDiagonal
+                      Orientations.Horizontal,
+                      Orientations.Vertical,
+                      Orientations.Diagonal,
+                      Orientations.SecondDiagonal
                 };
 
                 foreach (var orientation in orientations)
                 {
-                    var tiles = StaticMethods.GetBlockedAndSameTiles(Board, tile, tile.Piece, orientation, 5, 0);
+                    var line = OrientedlLine.FromBoard(
+                      Board,
+                      tile.X,
+                      tile.Y,
+                      tile.Piece,
+                      orientation,
+                      maxTile: WinCondition,
+                      blankTolerance: 0);
 
-                    var sameCounter = tiles.Item1.Count();
-                    var blockedCounter = tiles.Item2.Count();
-
-                    if (tiles.Item3
-                        && sameCounter + 1 == 5
-                        && blockedCounter < 2)
-                    {
-                        return true;
-                    }
+                    if (!line.IsChained
+                        || line.SameTileCount + 1 != WinCondition
+                        || line.BlockTilesCount >= 2) continue;
+                    return true;
                 }
             }
-
             return false;
-        }
-        private bool CheckIfGameIsOver(int x, int y, Pieces piece)
-        {
-
-            // vertical
-            for (var row = 0; row <= _height - 5; row++)
-            {
-                for (var col = 0; col < _width; col++)
-                {
-                    if (Board[row, col].Piece != Pieces.None &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 1, col].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 2, col].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 3, col].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 4, col].Piece.TypeIndex)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // horizontal
-            for (var row = 0; row < _height; row++)
-            {
-                for (var col = 0; col <= _width - 5; col++)
-                {
-                    if (Board[row, col].Piece != Pieces.None &&
-                    Board[row, col].Piece.TypeIndex == Board[row, col + 1].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row, col + 2].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row, col + 3].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row, col + 4].Piece.TypeIndex)
-
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // right and down
-            for (var row = 0; row <= _height - 5; row++)
-            {
-                for (var col = 0; col <= _width - 5; col++)
-                {
-                    if (Board[row, col].Piece != Pieces.None &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 1, col + 1].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 2, col + 2].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 3, col + 3].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row + 4, col + 4].Piece.TypeIndex)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // right and up
-            for (var row = 4; row < _height; row++)
-            {
-                for (var col = 0; col <= _width - 5; col++)
-                {
-                    if (Board[row, col].Piece != Pieces.None &&
-                    Board[row, col].Piece.TypeIndex == Board[row - 1, col + 1].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row - 2, col + 2].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row - 3, col + 3].Piece.TypeIndex &&
-                    Board[row, col].Piece.TypeIndex == Board[row - 4, col + 4].Piece.TypeIndex)
-                    {
-                        return true;
-                    }
-                }
-            }
-            // If no win condition is met, the game is not over
-            return false;
-        }
-
-        public void RestartGame()
-        {
-            IsOver = false;
-            for (var i = 0; i < _height; i++)
-            {
-                for (var j = 0; j < _width; j++)
-                {
-                    var tile = Board[i, j];
-                    tile.Piece = new Piece(Pieces.None);
-                    UpdateBoard?.Invoke(this, new UpdateBoardEvent(tile));
-                }
-            }
-            ResetBoard?.Invoke(this, new ResetBoardEvent());
         }
 
         public Game DeepClone()
@@ -227,24 +110,130 @@ namespace Gomoku.Logic
             return new Game(this);
         }
 
-        public void Undo()
+        public void Play(IPositional positional)
         {
-            if (MoveHistory.Count <= 0)
+            Play(positional.X, positional.Y);
+        }
+
+        public void Play(int x, int y)
+        {
+            if (IsOver)
             {
                 return;
             }
 
-            var removedTile = MoveHistory.Pop();
+            var tile = Board[x, y];
 
-            UndoMove?.Invoke(this, new UpdateBoardEvent(removedTile));
+            if (tile.Piece.Type != Pieces.None)
+            {
+                return;
+            }
 
+            var oldPlayer = Manager.CurrentPlayer;
+            tile.Piece = oldPlayer.Piece;
+            var previousTile = LastMove;
+            _history.Push(tile);
+
+            BoardChanging?.Invoke(
+              this,
+              new BoardChangingEventArgs(
+                new Tile[] { tile },
+                Array.Empty<Tile>()));
+
+            if (CheckGameOver(x, y))
+            {
+                IsOver = true;
+
+                if (ShiftPlayersOnGameOver)
+                {
+                    Manager.Turn.ShiftStartForwards();
+                }
+            }
+
+            Manager.Turn.MoveNext();
+
+            BoardChanged?.Invoke(
+              this,
+              new BoardChangedEventArgs(
+                new Tile[] { tile },
+                Array.Empty<Tile>()));
 
             if (IsOver)
             {
-                IsOver = false;
+                GameOver?.Invoke(
+                this,
+                new GameOverEventArgs(
+                  Manager.Turn.Current,
+                  oldPlayer));
+            }
+        }
+
+        public void Restart()
+        {
+            var history = _history.ToArray();
+            BoardChanging?.Invoke(
+              this,
+              new BoardChangingEventArgs(
+                Array.Empty<Tile>(),
+                history));
+
+            foreach (var tile in _history)
+            {
+                tile.Piece = new Piece(Pieces.None);
             }
 
-            MoveMade?.Invoke(this, new MoveMadeEvent());
+            Manager.Turn.Reset();
+            _history.Clear();
+            IsOver = false;
+
+            BoardChanged?.Invoke(
+              this,
+              new BoardChangedEventArgs(
+                Array.Empty<Tile>(),
+                history));
+        }
+
+        public Game ShallowClone()
+        {
+            return (Game)MemberwiseClone();
+        }
+
+        public void Undo()
+        {
+            if (!CanUndo)
+            {
+                return;
+            }
+
+            var removedTile = _history.Pop();
+            BoardChanging?.Invoke(
+              this,
+              new BoardChangingEventArgs(
+                Array.Empty<Tile>(),
+                new Tile[] { removedTile }));
+
+            removedTile.Piece = new Piece(Pieces.None);
+            Manager.Turn.MoveBack();
+            if (IsOver)
+            {
+                IsOver = false;
+                Manager.Turn.ShiftStartBackwards();
+            }
+
+            BoardChanged?.Invoke(
+              this,
+              new BoardChangedEventArgs(
+                Array.Empty<Tile>(),
+                new Tile[] { removedTile }));
+        }
+
+        object IDeepCloneable.DeepClone()
+        {
+            return DeepClone();
+        }
+        object IShallowCloneable.ShallowClone()
+        {
+            return ShallowClone();
         }
     }
 }

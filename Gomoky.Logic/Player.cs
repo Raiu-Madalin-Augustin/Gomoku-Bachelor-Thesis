@@ -1,34 +1,60 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using Gomoku.Logic.AI;
 
 namespace Gomoku.Logic
 {
-    public class Player
+  /// <summary>
+  /// Defines a player in the game.
+  /// </summary>
+  public class Player
+  {
+    public Player(string name, Piece piece, MiniMaxBase ai, bool isAuto = false)
     {
-        public Piece Piece { get; set; }
-
-        public IGomokuBase? GomokuAi { get; set; }
-
-        public bool AutoPlay { get; set; }
-
-        public string PlayerName { get; set; }
-
-        public Player(string name, Piece piece, IGomokuBase gomoku, bool auto = false)
-        {
-            PlayerName = name;
-            Piece = piece;
-            GomokuAi = gomoku;
-            AutoPlay = auto;
-        }
-
-        public Player(string name, Piece piece, bool auto = false)
-        {
-            PlayerName = name;
-            Piece = piece;
-            AutoPlay = auto;
-        }
+      SetName(name);
+      Piece = piece;
+      AI = ai;
+      IsAuto = isAuto;
     }
+
+    /// <summary>
+    /// The AI used for this player.
+    /// </summary>
+    public MiniMaxBase AI { get; set; }
+
+    /// <summary>
+    /// If this <see cref="Player"/> will use AI.
+    /// </summary>
+    public bool IsAuto { get; set; }
+
+    /// <summary>
+    /// Name of player.
+    /// </summary>
+    public string Name { get; private set; }
+
+    /// <summary>
+    /// The piece that this player will have
+    /// </summary>
+    public Piece Piece { get; }
+
+    /// <summary>
+    /// Sets a non-null or whitespace name for <see cref="Player"/>.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public void SetName(string name)
+    {
+      if (string.IsNullOrWhiteSpace(name))
+      {
+        throw new ArgumentException($"{nameof(name)} must not be null or empty.");
+      }
+
+      Name = name;
+    }
+
+    public override string ToString()
+    {
+      return $"{nameof(Name)}={Name}, {nameof(Piece)}={Piece}, {nameof(IsAuto)}={IsAuto}";
+    }
+  }
 }

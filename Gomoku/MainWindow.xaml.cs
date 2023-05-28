@@ -3,199 +3,219 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Animation;
+using System.Windows.Input;
 using Gomoku.GUI.ViewModels;
 using Gomoku.Logic;
 using Gomoku.Logic.AI;
 
 namespace Gomoku.GUI
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        private readonly int _boardWidth;
-        private readonly int _boardHeight;
-        private readonly IEnumerable<Player> _players;
-        private int _secondPlayerScore;
-        private int _firstPlayerScore;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string FirstPlayerName { get; set; }
-
-        public string SecondPlayerName { get; set; }
-
-        public int FirstPlayerScore
-        {
-            get => _firstPlayerScore;
-            set
-            {
-                if (_firstPlayerScore != value)
-                {
-                    _firstPlayerScore = value;
-                    OnPropertyChanged(nameof(FirstPlayerScore));
-                }
-            }
-        }
-
-        public int SecondPlayerScore
-        {
-            get => _secondPlayerScore;
-            set
-            {
-                if (_secondPlayerScore != value)
-                {
-                    _secondPlayerScore = value;
-                    OnPropertyChanged(nameof(SecondPlayerScore));
-                }
-            }
-        }
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public MainWindow() :
-            this(15, 15,
+          this(15, 15,
             new List<Player>()
             {
-                new Player("P1", new Piece(Pieces.X), false),
-                new Player("P2", new Piece(Pieces.Y),new MinMax(), false)
+          new Player("Player 1", new Piece(Pieces.X), new MiniMax()),
+          new Player("Player 2", new Piece(Pieces.O), new MiniMax(), true),
             })
         {
-
         }
-
-        public BoardViewModel Board { get; set; }
-        public Game Game { get; set; }
 
         public MainWindow(int boardWidth, int boardHeight, IEnumerable<Player> players)
         {
             InitializeComponent();
-            Game = new Game(boardHeight, boardWidth, players);
-            Board = new BoardViewModel(Game);
 
-            Game.MoveMade += Board_BoardChangedAsync;
-
-
-            Initialize(boardHeight, boardWidth);
-            _boardWidth = boardWidth;
-            _boardHeight = boardHeight;
-            _players = players;
-            FirstPlayerName = players.First().PlayerName;
-            SecondPlayerName = players.Last().PlayerName;
+            Game = new Game(boardWidth, boardHeight, players);
+            BoardViewModel = new BoardViewModel(Game);
+            InitializeBoard(boardWidth, boardHeight);
+            Game.BoardChanged += BoardBoardChangedAsync!;
+            Game.GameOver += BoardGameOver!;
         }
 
-        private void Initialize(int width, int height)
+        public BoardViewModel BoardViewModel { get; }
+        public Game Game { get; }
+
+        private async Task<IPositional> AiPlayAsync(bool showAnalysis = false)
         {
-            //Styles
-            var columnStyle = Resources["ColumnStyle"] as Style;
-            var tileStyle = Resources["TileStyle"] as Style;
-            var marginTileStyle = Resources["MarginTileStyle"] as Style;
+            var player = Game.Manager.CurrentPlayer;
 
-            var columns = new StackPanel()
+            var sw = Stopwatch.StartNew();
+            var result = await Task.Run(() => player.AI.Analyze(Game));
+            sw.Stop();
+            if (sw.ElapsedMilliseconds < 500)
             {
-                Style = columnStyle
-            };
-
-            //Top left tile
-            var emptyTile = new Button()
-            {
-                Style = marginTileStyle,
-                Content = ' '
-            };
-
-            columns.Children.Add(emptyTile);
-
-            //add tiles with names
-            for (var i = 0; i < width; i++)
-            {
-                var tile = new Button()
-                {
-                    Style = marginTileStyle,
-                    Content = (char)(i + 'a')
-                };
-                columns.Children.Add(tile);
+                var delay = 500 - sw.ElapsedMilliseconds;
+                await Task.Delay((int)delay);
             }
 
-            //first line to vertical stack
-            VerticalStackPanel.Children.Add(columns);
-
-            //Add rows
-            for (var i = 0; i < height; i++)
+            if (showAnalysis)
             {
-                var widthPanel = new StackPanel()
-                {
-                    Style = columnStyle
-                };
-
-                var rowCoordinate = new Button()
-                {
-                    Style = marginTileStyle,
-                    Content = i + 1
-                };
-
-                widthPanel.Children.Add(rowCoordinate);
-
-                //Add buttons for the tiles for the row
-                for (var j = 0; j < width; j++)
-                {
-                    var tile = new Button()
-                    {
-                        Style = tileStyle,
-                        DataContext = Board[i, j]
-                    };
-                    widthPanel.Children.Add(tile);
-                }
-                //add the row to the vertical stack
-                VerticalStackPanel.Children.Add(widthPanel);
-
+                BoardViewModel.ClearHighlightedTiles();
+                BoardViewModel.Highlight(result.PossibleChoices);
+                BoardViewModel.Highlight(Game.LastMove);
             }
+
+            return result.SelectedChoice;
         }
-        private void TileClick(object? sender, RoutedEventArgs e)
+
+        private async void AnalyzeButtonClick(object sender, RoutedEventArgs e)
         {
-            if (sender is null || Game.IsOver)
+            if (Game.IsOver)
             {
                 return;
             }
 
-            if (sender is Button { DataContext: TileViewModel tile }) Game.Play(tile.Tile.X, tile.Tile.Y);
-
-            FirstPlayerScore = Game.FirstPlayerScore;
-            SecondPlayerScore = Game.SecondPlayerScore;
+            var selectedTile = await AiPlayAsync(showAnalysis: true);
+            BoardViewModel.Select(selectedTile);
         }
 
-        private void Restart(object sender, RoutedEventArgs e)
-        {
-            Storyboard fadeInStoryboard = (Storyboard)RestartGame.Resources["FadeInStoryboard"];
-            Storyboard fadeOutStoryboard = (Storyboard)RestartGame.Resources["FadeOutStoryboard"];
-
-            // Start the fade-in animation on the grid
-            fadeInStoryboard.Begin(myGrid);
-
-            // Delay the fade-out animation by 1.5 seconds
-            Task.Delay(1500).ContinueWith(_ =>
-            {
-                // Start the fade-out animation on the grid
-                fadeOutStoryboard.Begin(myGrid);
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-
-            Game.RestartGame();
-        }
-
-        private async void Board_BoardChangedAsync(object sender, MoveMadeEvent e)
+        private async void BoardBoardChangedAsync(object sender, BoardChangedEventArgs e)
         {
             // AI
-            if (Game is { IsOver: false, CurrentPlayer.GomokuAi: { } })
+            if (Game is { IsOver: false, Manager.CurrentPlayer.IsAuto: true } 
+                && UseAIToggleButton.IsChecked == true)
             {
                 await RunAi();
             }
+        }
+
+        private void BoardGameOver(object sender, GameOverEventArgs e)
+        {
+            if (e.Winner is null)
+            {
+                ShowMessage("Tie!");
+            }
+            else
+            {
+                ShowMessage($"{e.Winner.Name} wins!");
+            }
+
+            DemoToggleButton.IsChecked = false;
+        }
+
+        private async void DemoToggleButtonChecked(object sender, RoutedEventArgs e)
+        {
+            if (Game.IsOver)
+            {
+                RestartButtonClick(null, null);
+            }
+
+            foreach (var player in Game.Manager.Players)
+            {
+                player.IsAuto = true;
+            }
+
+            UseAIToggleButton.IsChecked = true;
+            UseAIToggleButton.IsEnabled = false;
+            AnalyzeButton.IsEnabled = false;
+            RestartButton.IsEnabled = false;
+            UndoButton.IsEnabled = false;
+
+            await RunAi();
+        }
+
+        private void DemoToggleButtonUnchecked(object sender, RoutedEventArgs e)
+        {
+            UseAIToggleButton.IsChecked = false;
+            UseAIToggleButton.IsEnabled = true;
+            AnalyzeButton.IsEnabled = true;
+            RestartButton.IsEnabled = true;
+            UndoButton.IsEnabled = true;
+            Game.Manager.Players.First().IsAuto = false;
+        }
+
+        private void InitializeBoard(int width, int height)
+        {
+            // Gets horizontal stack style resource
+            var widthStackPanelStyle = Resources["WidthStackPanelStyle"] as Style;
+
+            // Gets clickable tile style resource
+            var tileStyle = Resources["TileButtonStyle"] as Style;
+
+            // Gets non-clickable tile style resource
+            var coorTileStlye = Resources["CoordinateTileButtonStyle"] as Style;
+
+            // Creates first row (coordinates row that has alphabetic characters)
+            var columnStackPanel = new StackPanel
+            {
+                Style = widthStackPanelStyle
+            };
+
+            // Add blank tile (top-left tile)
+            var blankTile = new Button
+            {
+                Style = coorTileStlye,
+                Content = ' ',
+            };
+            columnStackPanel.Children.Add(blankTile);
+
+            // Add the rest of coordinate tiles with names
+            for (var j = 0; j < width; j++)
+            {
+                var coordinateButton = new Button
+                {
+                    Style = coorTileStlye,
+                    Content = j,
+                };
+                columnStackPanel.Children.Add(coordinateButton);
+            }
+
+            // Add first line to the vertical stack
+            HeightStackPanel.Children.Add(columnStackPanel);
+
+            // Add the rest of rows
+            for (var i = 0; i < height; i++)
+            {
+                // Creates new horizontal stack representing a row
+                var widthStackPanel = new StackPanel
+                {
+                    Style = widthStackPanelStyle
+                };
+
+                // Add coordinate button (left-most column)
+                var coordinateButton = new Button
+                {
+                    Style = coorTileStlye,
+                    Content = i
+
+                };
+
+                // Add the coordinate button to the horizontal stack
+                widthStackPanel.Children.Add(coordinateButton);
+
+                // Add the rest of clickable buttons to the stack
+                for (var j = 0; j < width; j++)
+                {
+                    var tileButton = new Button
+                    {
+                        DataContext = BoardViewModel[j, i],
+                        Style = tileStyle
+                    };
+                    widthStackPanel.Children.Add(tileButton);
+                }
+
+                // Add the horizontal stack to the vertical stack
+                HeightStackPanel.Children.Add(widthStackPanel);
+            }
+        }
+
+        private void MessageGridPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (MessageGrid.Visibility != Visibility.Collapsed)
+            {
+                MessageGrid.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void RestartButtonClick(object sender, RoutedEventArgs e)
+        {
+            Game.Restart();
+            MessageGridPreviewMouseDown(null, null);
+            DemoToggleButton.IsChecked = false;
         }
 
         private async Task RunAi()
@@ -205,24 +225,41 @@ namespace Gomoku.GUI
             {
                 return;
             }
-            Game.Play(tile.Item1, tile.Item2);
+            Game.Play(tile.X, tile.Y);
         }
-        private async Task<Tuple<int, int>?> AiPlayAsync(bool showAnalysis = false)
+
+        private void ShowMessage(string message)
         {
-            var player = Game.CurrentPlayer;
+            MessageTextBlock.Text = message;
+            MessageGrid.Visibility = Visibility.Visible;
+        }
 
-
-            var sw = Stopwatch.StartNew();
-            var result = await Task.Run(() => player.GomokuAi?.Analyze(Game.DeepClone()));
-            sw.Stop();
-            if (sw.ElapsedMilliseconds < 500)
+        private void TileButtonClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is null || Game.IsOver)
             {
-                var delay = 500 - sw.ElapsedMilliseconds;
-                await Task.Delay((int)delay);
+                return;
             }
 
+            if (sender is not Button button
+                || button.DataContext is null) return;
+            if (button.DataContext is TileViewModel tileVm) Game.Play(tileVm.Tile.X, tileVm.Tile.Y);
+        }
 
-            return result;
+        private void UndoButtonClick(object sender, RoutedEventArgs e)
+        {
+            Game.Undo();
+        }
+
+        private async void UseAIToggleButtonChecked(object sender, RoutedEventArgs e)
+        {
+            if (!Game.IsOver
+              && DemoToggleButton.IsChecked == false
+              && Game.Manager.CurrentPlayer.IsAuto
+              && UseAIToggleButton.IsChecked == true)
+            {
+                await RunAi();
+            }
         }
     }
 }

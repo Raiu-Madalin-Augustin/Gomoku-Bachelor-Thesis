@@ -1,72 +1,135 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Gomoku.Logic;
 
 namespace Gomoku.GUI.ViewModels
 {
-    public class BoardViewModel
+  public class BoardViewModel
+  {
+    public BoardViewModel(Game game)
     {
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public TileViewModel[,] TileVMs { get; }
-        public TileViewModel this[int x, int y] => TileVMs[x, y];
-        public Board Board { get; set; }
-        private ObservableCollection<TileViewModel> HighlightedTiles { get; }
+      Board = game.Board;
 
-
-        public BoardViewModel(Game game)
+      TileVMs = new TileViewModel[Board.Width, Board.Height];
+      for (var i = 0; i < Board.Width; i++)
+      {
+        for (var j = 0; j < Board.Height; j++)
         {
-            Board = game.Board;
-            Width = 15;
-            Height = 15;
-            TileVMs = new TileViewModel[Width, Height];
+          TileVMs[i, j] = new TileViewModel(Board[i, j]);
+        }
+      }
 
-            for (var i = 0; i < Width; i++)
+      HighlightedTiles = new ObservableCollection<TileViewModel>();
+      HighlightedTiles.CollectionChanged += HighlightedTilesCollectionChanged!;
+      game.BoardChanged += GameBoardChanged!;
+      game.GameOver += GameOver!;
+    }
+
+    public Board Board { get; }
+
+    private ObservableCollection<TileViewModel> HighlightedTiles { get; }
+
+    private TileViewModel[,] TileVMs { get; }
+
+    public TileViewModel this[int x, int y] => TileVMs[x, y];
+
+    public void Clear(int x, int y)
+    {
+      var tileVm = this[x, y];
+      tileVm.Piece = (Piece)Pieces.None;
+      HighlightedTiles.Remove(tileVm);
+    }
+
+    public void ClearHighlightedTiles()
+    {
+      int count;
+      while ((count = HighlightedTiles.Count) > 0)
+      {
+        HighlightedTiles.RemoveAt(count - 1);
+      }
+    }
+
+    public void Highlight(IEnumerable<IPositional> positionals)
+    {
+      foreach (var position in positionals)
+      {
+        HighlightedTiles.Add(this[position.X, position.Y]);
+      }
+    }
+
+    public void Highlight(params IPositional[] positionals)
+    {
+      foreach (var position in positionals)
+      {
+        HighlightedTiles.Add(this[position.X, position.Y]);
+      }
+    }
+
+    public void Select(IPositional position)
+    {
+      this[position.X, position.Y].IsSelected = true;
+    }
+
+    public void Set(int x, int y, Piece piece)
+    {
+      var tileVm = this[x, y];
+      tileVm.Piece = piece;
+      HighlightedTiles.Add(tileVm);
+    }
+
+    private void GameBoardChanged(object sender, BoardChangedEventArgs e)
+    {
+      ClearHighlightedTiles();
+
+      if (e.RemovedTiles.Count > 0)
+      {
+        foreach (var tile in e.RemovedTiles)
+        {
+          Clear(tile.X, tile.Y);
+        }
+
+        var lastTile = ((Game)sender).LastMove;
+        if (lastTile != null)
+        {
+          Highlight(lastTile);
+        }
+      }
+
+      foreach (var tile in e.AddedTiles)
+      {
+        Set(tile.X, tile.Y, tile.Piece);
+      }
+    }
+
+    private void GameOver(object sender, GameOverEventArgs e)
+    {
+    }
+
+    private void HighlightedTilesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Reset:
             {
-                for (var j = 0; j < Height; j++)
-                {
-                    TileVMs[i, j] = new TileViewModel(Board[i, j]);
-                }
-            }
-            HighlightedTiles = new ObservableCollection<TileViewModel>();
-            HighlightedTiles.CollectionChanged += OnHighlightedTilesChanged;
-            game.UpdateBoard += UpdateBoard!;
-            game.UndoMove += UndoMove;
-            game.ResetBoard += ResetHighlitedTiled;
-        }
+                if (e.OldItems != null)
+                    foreach (TileViewModel item in e.OldItems)
+                    {
+                        item.IsHighlighted = false;
+                    }
 
-        private void OnHighlightedTilesChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action != NotifyCollectionChangedAction.Add) return;
-            foreach (TileViewModel item in e.NewItems!)
+                break;
+            }
+            case NotifyCollectionChangedAction.Add:
             {
-                item.IsHighlighted = true;
+                if (e.NewItems != null)
+                    foreach (TileViewModel item in e.NewItems)
+                    {
+                        item.IsHighlighted = true;
+                    }
+                break;
             }
-        }
-
-        private void UpdateBoard(object sender, UpdateBoardEvent e)
-        {
-
-            var tile = this[e.Tile.X, e.Tile.Y];
-            tile.Piece = e.Tile.Piece;
-
-            HighlightedTiles.Add(tile);
-        }
-
-        private void UndoMove(object? sender, UpdateBoardEvent e)
-        {
-            var tile = this[e.Tile.X, e.Tile.Y];
-            HighlightedTiles.Remove(tile);
-        }
-
-        private void ResetHighlitedTiled(object? sender, ResetBoardEvent e)
-        {
-            foreach (var item in HighlightedTiles)
-            {
-                item.IsHighlighted = false;
-
-            }
-            HighlightedTiles.Clear();
         }
     }
+  }
 }
