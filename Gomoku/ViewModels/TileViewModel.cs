@@ -1,19 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Gomoku.Logic;
+using Gomoku.Logic.BoardRelated;
 
 namespace Gomoku.GUI.ViewModels
 {
-    public class TileViewModel
-    {
-        public Tile Tile { get; }
+    public class TileViewModel : VMBase
+  {
+    private bool _isHighlighted;
 
-        public TileViewModel(Tile tile)
-        {
-            Tile = tile;
-        }
+    private bool _isSelected;
+
+    public TileViewModel(Tile tile)
+    {
+      Tile = tile ?? throw new ArgumentNullException(nameof(tile));
     }
+
+    public bool IsHighlighted
+    {
+      get => _isHighlighted;
+      set
+      {
+        if (IsSelected == true && value == false)
+        {
+          IsSelected = false;
+        }
+        SetProperty(ref _isHighlighted, value);
+      }
+    }
+
+    public bool IsSelected
+    {
+      get => _isSelected;
+      set => SetProperty(ref _isSelected, value);
+    }
+
+    public Piece Piece
+    {
+      get => Tile.Piece;
+      set
+      {
+        Tile.Piece = value;
+        NotifyPropertyChanged();
+      }
+    }
+
+    public Tile Tile { get; }
+  }
 }
