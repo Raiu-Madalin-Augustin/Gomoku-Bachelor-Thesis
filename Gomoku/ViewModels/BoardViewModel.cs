@@ -2,10 +2,11 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Gomoku.Logic;
+using Gomoku.Logic.BoardRelated;
 
 namespace Gomoku.GUI.ViewModels
 {
-  public class BoardViewModel
+    public class BoardViewModel
   {
     public BoardViewModel(Game game)
     {
@@ -23,7 +24,6 @@ namespace Gomoku.GUI.ViewModels
       HighlightedTiles = new ObservableCollection<TileViewModel>();
       HighlightedTiles.CollectionChanged += HighlightedTilesCollectionChanged!;
       game.BoardChanged += GameBoardChanged!;
-      game.GameOver += GameOver!;
     }
 
     public Board Board { get; }
@@ -90,7 +90,7 @@ namespace Gomoku.GUI.ViewModels
         }
 
         var lastTile = ((Game)sender).LastMove;
-        if (lastTile != null)
+        if (lastTile != null!)
         {
           Highlight(lastTile);
         }
@@ -100,10 +100,6 @@ namespace Gomoku.GUI.ViewModels
       {
         Set(tile.X, tile.Y, tile.Piece);
       }
-    }
-
-    private void GameOver(object sender, GameOverEventArgs e)
-    {
     }
 
     private void HighlightedTilesCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

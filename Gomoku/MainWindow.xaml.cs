@@ -10,6 +10,8 @@ using System.Windows.Input;
 using Gomoku.GUI.ViewModels;
 using Gomoku.Logic;
 using Gomoku.Logic.AI;
+using Gomoku.Logic.BoardRelated;
+using Gomoku.Logic.PlayerRelated;
 
 namespace Gomoku.GUI
 {
@@ -52,12 +54,11 @@ namespace Gomoku.GUI
                 await Task.Delay((int)delay);
             }
 
-            if (showAnalysis)
-            {
-                BoardViewModel.ClearHighlightedTiles();
-                BoardViewModel.Highlight(result.PossibleChoices);
-                BoardViewModel.Highlight(Game.LastMove);
-            }
+            if (!showAnalysis) return result.SelectedChoice;
+
+            BoardViewModel.ClearHighlightedTiles();
+            BoardViewModel.Highlight(result.PossibleChoices);
+            BoardViewModel.Highlight(Game.LastMove);
 
             return result.SelectedChoice;
         }
@@ -76,7 +77,7 @@ namespace Gomoku.GUI
         private async void BoardBoardChangedAsync(object sender, BoardChangedEventArgs e)
         {
             // AI
-            if (Game is { IsOver: false, Manager.CurrentPlayer.IsAuto: true } 
+            if (Game is { IsOver: false, Manager.CurrentPlayer.IsAuto: true }
                 && UseAIToggleButton.IsChecked == true)
             {
                 await RunAi();
@@ -85,15 +86,7 @@ namespace Gomoku.GUI
 
         private void BoardGameOver(object sender, GameOverEventArgs e)
         {
-            if (e.Winner is null)
-            {
-                ShowMessage("Tie!");
-            }
-            else
-            {
-                ShowMessage($"{e.Winner.Name} wins!");
-            }
-
+            ShowMessage(e.Winner is null ? "Tie!" : $"{e.Winner.Name} wins!");
             DemoToggleButton.IsChecked = false;
         }
 
@@ -101,7 +94,7 @@ namespace Gomoku.GUI
         {
             if (Game.IsOver)
             {
-                RestartButtonClick(null, null);
+                RestartButtonClick(null!, null!);
             }
 
             foreach (var player in Game.Manager.Players)
@@ -214,7 +207,7 @@ namespace Gomoku.GUI
         private void RestartButtonClick(object sender, RoutedEventArgs e)
         {
             Game.Restart();
-            MessageGridPreviewMouseDown(null, null);
+            MessageGridPreviewMouseDown(null!, null!);
             DemoToggleButton.IsChecked = false;
         }
 

@@ -1,13 +1,9 @@
 ﻿using System;
-
-using Gomoku.Logic;
+using Gomoku.Logic.BoardRelated;
 
 namespace Gomoku.GUI.ViewModels
 {
-  /// <summary>
-  /// Defines a tile in the board
-  /// </summary>
-  public class TileViewModel : VMBase
+    public class TileViewModel : VMBase
   {
     private bool _isHighlighted;
 

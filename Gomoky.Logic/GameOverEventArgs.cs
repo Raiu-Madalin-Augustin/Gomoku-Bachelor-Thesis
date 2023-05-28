@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Gomoku.Logic.PlayerRelated;
 
 namespace Gomoku.Logic
 {

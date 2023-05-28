@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Gomoku.Logic.BoardRelated;
 
-namespace Gomoku.Logic
+namespace Gomoku.Logic.Lines
 {
     public class LineBasedCandidates : ICandidateSearcher
     {

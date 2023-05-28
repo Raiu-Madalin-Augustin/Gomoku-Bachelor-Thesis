@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Gomoku.Logic.BoardRelated;
 
-namespace Gomoku.Logic
+namespace Gomoku.Logic.Lines
 {
     public class OrientedlLine
     {

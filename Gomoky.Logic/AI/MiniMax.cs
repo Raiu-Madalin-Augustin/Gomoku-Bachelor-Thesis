@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gomoku.Logic.BoardRelated;
+using Gomoku.Logic.Evaluator;
+using Gomoku.Logic.Lines;
+using Gomoku.Logic.PlayerRelated;
 
 namespace Gomoku.Logic.AI
 {
@@ -9,7 +13,7 @@ namespace Gomoku.Logic.AI
         public MiniMax(int level = 1)
         {
             Level = level;
-            TileEvaluator = new Evaluator();
+            TileEvaluator = new Evaluate();
             CandidateSearcher = new LineBasedCandidates();
         }
 
@@ -77,7 +81,7 @@ namespace Gomoku.Logic.AI
 
         private double EvaluateGame(Game game, IPositional positional, Player forPlayer, Player againstPlayer)
         {
-            var value = TileEvaluator.Evaluate(game, positional, againstPlayer.Piece);
+            var value = TileEvaluator.EvaluatePosition(game, positional, againstPlayer.Piece);
 
             if (forPlayer != againstPlayer)
             {

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Gomoku.Logic
+namespace Gomoku.Logic.PlayerRelated
 {
     public class PlayerManager : IDeepCloneable<PlayerManager>
     {
-        public PlayerManager(IEnumerable<Player> collection)
+        public PlayerManager(IEnumerable<PlayerRelated.Player> collection)
         {
-            var enumerable = collection as Player[] ?? collection.ToArray();
+            var enumerable = collection as PlayerRelated.Player[] ?? collection.ToArray();
             if (!enumerable.Any() || !enumerable.Any())
             {
                 throw new ArgumentException(nameof(collection));
@@ -25,15 +25,15 @@ namespace Gomoku.Logic
             Turn = playerManager.Turn.ShallowClone();
         }
 
-        public Player CurrentPlayer => Players[Turn.Current];
+        public PlayerRelated.Player CurrentPlayer => Players[Turn.Current];
 
-        public ImmutableArray<Player> Players { get; }
+        public ImmutableArray<PlayerRelated.Player> Players { get; }
 
-        public Player PreviousPlayer => Players[Turn.Previous];
+        public PlayerRelated.Player PreviousPlayer => Players[Turn.Previous];
 
         public Turn Turn { get; }
 
-        public Player this[int index] => Players[index];
+        public PlayerRelated.Player this[int index] => Players[index];
 
         public PlayerManager DeepClone()
         {

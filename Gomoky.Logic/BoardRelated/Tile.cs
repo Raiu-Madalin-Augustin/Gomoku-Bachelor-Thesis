@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Gomoku.Logic.AI;
-
-namespace Gomoku.Logic
+namespace Gomoku.Logic.BoardRelated
 {
     public class Tile : IPositional, IDeepCloneable<Tile>, IShallowCloneable<Tile>
     {
@@ -51,7 +49,7 @@ namespace Gomoku.Logic
             return new Tile(X, Y, Piece);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Tile tile
               && EqualityComparer<Piece>.Default.Equals(Piece, tile.Piece)

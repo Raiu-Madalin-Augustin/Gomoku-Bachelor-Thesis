@@ -1,10 +1,12 @@
 ﻿using System;
+using Gomoku.Logic.BoardRelated;
+using Gomoku.Logic.Lines;
 
-namespace Gomoku.Logic
+namespace Gomoku.Logic.Evaluator
 {
-    public class Evaluator : ITileEvaluator
+    public class Evaluate : ITileEvaluator
     {
-        public double Evaluate(Game game, IPositional positional, Piece piece)
+        public double EvaluatePosition(Game game, IPositional positional, Piece piece)
         {
             var point = 0.0;
 

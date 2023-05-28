@@ -1,10 +1,7 @@
 ﻿using System;
 
-namespace Gomoku.Logic
+namespace Gomoku.Logic.BoardRelated
 {
-    /// <summary>
-    /// Defines a Gomoku board
-    /// </summary>
     public class Board : IDeepCloneable<Board>, IShallowCloneable<Board>
     {
         private readonly Tile[,] _tiles;
@@ -48,14 +45,8 @@ namespace Gomoku.Logic
             }
         }
 
-        /// <summary>
-        /// Maximum y-axis index, exclusively
-        /// </summary>
         public int Height { get; }
 
-        /// <summary>
-        /// Maximum x-axis index, exclusively
-        /// </summary>
         public int Width { get; }
 
         public Tile this[int x, int y] => _tiles[x, y];

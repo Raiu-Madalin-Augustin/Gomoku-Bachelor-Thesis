@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Gomoku.Logic.BoardRelated;
+using Gomoku.Logic.Lines;
+using Gomoku.Logic.PlayerRelated;
 
 namespace Gomoku.Logic
 {
-    /// <summary>
-    /// Defines a Gomoku game
-    /// </summary>
     public class Game : IDeepCloneable<Game>, IShallowCloneable<Game>
     {
         public static readonly int WinCondition = 5;
         private readonly Stack<Tile> _history;
 
-        public Game(int width, int height, IEnumerable<Player> players)
+        public Game(int width, int height, IEnumerable<PlayerRelated.Player> players)
         {
             Board = new Board(width, height);
             MaxMove = width * height;
@@ -43,7 +43,7 @@ namespace Gomoku.Logic
 
         public event EventHandler<GameOverEventArgs>? GameOver;
 
-        public Board Board { get; }
+        public BoardRelated.Board Board { get; }
 
         public bool CanUndo => _history.Count > 0;
 
@@ -75,34 +75,17 @@ namespace Gomoku.Logic
 
             var tile = Board[x, y];
 
-            if (tile.Piece.Type != Pieces.None)
+            if (tile.Piece.Type == Pieces.None) return false;
+
+            var orientations = new[]
             {
-                var orientations = new[]
-                {
-                      Orientations.Horizontal,
-                      Orientations.Vertical,
-                      Orientations.Diagonal,
-                      Orientations.SecondDiagonal
-                };
+                Orientations.Horizontal,
+                Orientations.Vertical,
+                Orientations.Diagonal,
+                Orientations.SecondDiagonal
+            };
 
-                foreach (var orientation in orientations)
-                {
-                    var line = OrientedlLine.FromBoard(
-                      Board,
-                      tile.X,
-                      tile.Y,
-                      tile.Piece,
-                      orientation,
-                      maxTile: WinCondition,
-                      blankTolerance: 0);
-
-                    if (!line.IsChained
-                        || line.SameTileCount + 1 != WinCondition
-                        || line.BlockTilesCount >= 2) continue;
-                    return true;
-                }
-            }
-            return false;
+            return orientations.Select(orientation => OrientedlLine.FromBoard(Board, tile.X, tile.Y, tile.Piece, orientation, maxTile: WinCondition, blankTolerance: 0)).Any(line => line.IsChained && line.SameTileCount + 1 == WinCondition && line.BlockTilesCount < 2);
         }
 
         public Game DeepClone()
@@ -131,7 +114,6 @@ namespace Gomoku.Logic
 
             var oldPlayer = Manager.CurrentPlayer;
             tile.Piece = oldPlayer.Piece;
-            var previousTile = LastMove;
             _history.Push(tile);
 
             BoardChanging?.Invoke(
