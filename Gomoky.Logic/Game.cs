@@ -43,7 +43,7 @@ namespace Gomoku.Logic
 
         public event EventHandler<GameOverEventArgs>? GameOver;
 
-        public BoardRelated.Board Board { get; }
+        public Board Board { get; }
 
         public bool CanUndo => _history.Count > 0;
 

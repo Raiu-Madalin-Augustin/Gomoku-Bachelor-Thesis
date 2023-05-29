@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +22,7 @@ namespace Gomoku.GUI
           this(15, 15,
             new List<Player>()
             {
-          new Player("Player 1", new Piece(Pieces.X), new MiniMax()),
+          new Player("Player 1", new Piece(Pieces.X), new PythonMiniMax()),
           new Player("Player 2", new Piece(Pieces.O), new MiniMax(), true),
             })
         {
@@ -34,7 +35,7 @@ namespace Gomoku.GUI
             Game = new Game(boardWidth, boardHeight, players);
             BoardViewModel = new BoardViewModel(Game);
             InitializeBoard(boardWidth, boardHeight);
-            Game.BoardChanged += BoardBoardChangedAsync!;
+            Game.BoardChanged += BoardChangedAsync!;
             Game.GameOver += BoardGameOver!;
         }
 
@@ -74,9 +75,9 @@ namespace Gomoku.GUI
             BoardViewModel.Select(selectedTile);
         }
 
-        private async void BoardBoardChangedAsync(object sender, BoardChangedEventArgs e)
+        private async void BoardChangedAsync(object sender, BoardChangedEventArgs e)
         {
-            // AI
+            var yvv = Game.History.ToString();
             if (Game is { IsOver: false, Manager.CurrentPlayer.IsAuto: true }
                 && UseAIToggleButton.IsChecked == true)
             {
