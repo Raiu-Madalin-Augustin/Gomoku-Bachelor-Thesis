@@ -41,7 +41,7 @@ namespace Gomoku.GUI
         public BoardViewModel BoardViewModel { get; }
         public Game Game { get; }
 
-        private async Task<IPositional> AiPlayAsync(bool showAnalysis = false)
+        private async Task<ICoordinates> AiPlayAsync(bool showAnalysis = false)
         {
             var player = Game.Manager.CurrentPlayer;
 
@@ -86,11 +86,12 @@ namespace Gomoku.GUI
 
         private void BoardGameOver(object sender, GameOverEventArgs e)
         {
-            ShowMessage(e.Winner is null ? "Tie!" : $"{e.Winner.Name} wins!");
+            MessageTextBlock.Text = e.Winner is null ? "Tie!" : $"{e.Winner.Name} wins!";
+            MessageGrid.Visibility = Visibility.Visible;
             DemoToggleButton.IsChecked = false;
         }
 
-        private async void DemoToggleButtonChecked(object sender, RoutedEventArgs e)
+        private async void AiVsAiToggleButtonChecked(object sender, RoutedEventArgs e)
         {
             if (Game.IsOver)
             {
@@ -111,7 +112,7 @@ namespace Gomoku.GUI
             await RunAi();
         }
 
-        private void DemoToggleButtonUnchecked(object sender, RoutedEventArgs e)
+        private void AiVsAiToggleButtonUnchecked(object sender, RoutedEventArgs e)
         {
             UseAIToggleButton.IsChecked = false;
             UseAIToggleButton.IsEnabled = true;
@@ -221,12 +222,6 @@ namespace Gomoku.GUI
             Game.Play(tile.X, tile.Y);
         }
 
-        private void ShowMessage(string message)
-        {
-            MessageTextBlock.Text = message;
-            MessageGrid.Visibility = Visibility.Visible;
-        }
-
         private void TileButtonClick(object? sender, RoutedEventArgs e)
         {
             if (sender is null || Game.IsOver)
@@ -244,7 +239,7 @@ namespace Gomoku.GUI
             Game.Undo();
         }
 
-        private async void UseAIToggleButtonChecked(object sender, RoutedEventArgs e)
+        private async void UseAiToggleButtonChecked(object sender, RoutedEventArgs e)
         {
             if (!Game.IsOver
               && DemoToggleButton.IsChecked == false

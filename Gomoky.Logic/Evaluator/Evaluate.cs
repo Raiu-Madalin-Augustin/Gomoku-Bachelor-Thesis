@@ -6,7 +6,7 @@ namespace Gomoku.Logic.Evaluator
 {
     public class Evaluate : ITileEvaluator
     {
-        public double EvaluatePosition(Game game, IPositional positional, Piece piece)
+        public double EvaluatePosition(Game game, ICoordinates positional, Piece piece)
         {
             var point = 0.0;
 

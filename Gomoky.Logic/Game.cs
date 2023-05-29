@@ -93,7 +93,7 @@ namespace Gomoku.Logic
             return new Game(this);
         }
 
-        public void Play(IPositional positional)
+        public void Play(ICoordinates positional)
         {
             Play(positional.X, positional.Y);
         }

@@ -50,7 +50,7 @@ namespace Gomoku.GUI.ViewModels
       }
     }
 
-    public void Highlight(IEnumerable<IPositional> positionals)
+    public void Highlight(IEnumerable<ICoordinates> positionals)
     {
       foreach (var position in positionals)
       {
@@ -58,7 +58,7 @@ namespace Gomoku.GUI.ViewModels
       }
     }
 
-    public void Highlight(params IPositional[] positionals)
+    public void Highlight(params ICoordinates[] positionals)
     {
       foreach (var position in positionals)
       {
@@ -66,7 +66,7 @@ namespace Gomoku.GUI.ViewModels
       }
     }
 
-    public void Select(IPositional position)
+    public void Select(ICoordinates position)
     {
       this[position.X, position.Y].IsSelected = true;
     }

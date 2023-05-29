@@ -6,22 +6,22 @@ namespace Gomoku.Logic.AI
 {
   public class AnalysisResult
   {
-    public AnalysisResult(IPositional selectedChoice)
+    public AnalysisResult(ICoordinates selectedChoice)
     {
       SelectedChoice = selectedChoice;
-      PossibleChoices = new List<IPositional>()
+      PossibleChoices = new List<ICoordinates>()
       {
         selectedChoice
       };
     }
 
-    public AnalysisResult(IPositional selectedChoice, IEnumerable<IPositional> possibleChoices)
+    public AnalysisResult(ICoordinates selectedChoice, IEnumerable<ICoordinates> possibleChoices)
     {
         PossibleChoices = possibleChoices ?? throw new ArgumentNullException(nameof(possibleChoices));
       SelectedChoice = selectedChoice;
     }
 
-    public IEnumerable<IPositional> PossibleChoices { get; }
-    public IPositional SelectedChoice { get; }
+    public IEnumerable<ICoordinates> PossibleChoices { get; }
+    public ICoordinates SelectedChoice { get; }
   }
 }
