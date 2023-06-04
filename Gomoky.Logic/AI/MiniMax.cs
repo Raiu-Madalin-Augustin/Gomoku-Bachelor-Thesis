@@ -10,17 +10,17 @@ namespace Gomoku.Logic.AI
 {
     public class MiniMax : MiniMaxBase
     {
+        private ICandidateSearcher CandidateSearcher { get; set; }
+        private ITileEvaluator TileEvaluator { get; set; }
+
+        public int Level { get; set; }
+
         public MiniMax(int level = 1)
         {
             Level = level;
             TileEvaluator = new Evaluate();
             CandidateSearcher = new LineBasedCandidates();
         }
-
-        public int Level { get; set; }
-
-        private ICandidateSearcher CandidateSearcher { get; set; }
-        private ITileEvaluator TileEvaluator { get; set; }
 
         protected override AnalysisResult DoAnalyze(Game clonedGame)
         {

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -77,7 +74,6 @@ namespace Gomoku.GUI
 
         private async void BoardChangedAsync(object sender, BoardChangedEventArgs e)
         {
-            var yvv = Game.History.ToString();
             if (Game is { IsOver: false, Manager.CurrentPlayer.IsAuto: true }
                 && UseAIToggleButton.IsChecked == true)
             {

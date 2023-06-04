@@ -1,11 +1,12 @@
-import random
 import sys
 
-
-def print_hi(first, second):
-    # Use a breakpoint in the code line below to debug your script.
-    print(first, second)  # Press Ctrl+F8 to toggle the breakpoint.
-
+from game import Game
 
 if __name__ == '__main__':
-    print_hi(random.randint(1, 14), random.randint(1, 14))
+    args: str = sys.argv[1]
+    args = args[1:]
+    # print(args)
+    player = sys.argv[1][0]
+    game_runner = Game(player, 15, 1, args)
+    x, y = game_runner.aiplay()
+    print(x, y)

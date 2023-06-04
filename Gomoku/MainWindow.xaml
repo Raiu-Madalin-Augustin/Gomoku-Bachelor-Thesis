@@ -364,16 +364,17 @@
             <ImageBrush ImageSource="Resources/background.png"
                   Stretch="UniformToFill" />
         </Grid.Background>
-        <Grid MaxWidth="900">
+        <Grid MaxWidth="856" MaxHeight="705">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"
-                          MinWidth="750" />
+                <ColumnDefinition Width="3*" 
+                                  MinWidth="641"
+                />
                 <ColumnDefinition Width="150" />
             </Grid.ColumnDefinitions>
             <Border x:Name="BoardBorder">
                 <Border.Background>
                     <ImageBrush ImageSource="Resources/boardbackground.png"
-                      Stretch="Uniform" />
+                      Stretch="UniformToFill" />
                 </Border.Background>
                 <Grid>
                     <ScrollViewer HorizontalAlignment="Center"
