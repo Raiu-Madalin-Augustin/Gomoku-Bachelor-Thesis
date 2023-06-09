@@ -4,7 +4,7 @@ from board import BoardState
 
 
 class Game:
-    def __init__(self, player, size=19, depth=2, arguments="", ):
+    def __init__(self, player, size=19, depth=2, arguments=""):
         self.state = None
         self.size = size
         self.player = player

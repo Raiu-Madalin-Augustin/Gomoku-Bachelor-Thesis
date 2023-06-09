@@ -31,7 +31,6 @@ namespace Gomoku.Logic.AI
                 return new AnalysisResult(clonedGame.Board[clonedGame.Board.Width / 2, clonedGame.Board.Height / 2]);
             }
 
-            var possiblePositions = string.Join("|", CandidateSearcher.Search(clonedGame).ToDictionary(coordinate => (coordinate.X.ToString(), coordinate.Y.ToString())));
             var forPlayer = clonedGame.Manager.CurrentPlayer;
 
             //var args = new List<string> { movesDictionary, forPlayer };
@@ -55,3 +54,4 @@ namespace Gomoku.Logic.AI
         }
     }
 }
+

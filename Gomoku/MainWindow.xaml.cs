@@ -217,6 +217,14 @@ namespace Gomoku.GUI
                 return;
             }
             Game.Play(tile.X, tile.Y);
+            if (Game.CheckGameOver(tile.X, tile.Y))
+            {
+                BoardGameOver(
+                    this,
+                    new GameOverEventArgs(
+                        Game.Manager.Turn.Current,
+                        Game.Manager.PreviousPlayer));
+            }
         }
 
         private void TileButtonClick(object? sender, RoutedEventArgs e)

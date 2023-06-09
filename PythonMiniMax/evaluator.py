@@ -5,7 +5,7 @@ import piece
 
 def evaluation_state(state, current_color):
     return evaluate_color(state, piece.BLACK, current_color) + \
-        evaluate_color(state, piece.WHITE, current_color)
+           evaluate_color(state, piece.WHITE, current_color)
 
 
 def evaluate_color(state, color, current_color):
@@ -47,14 +47,20 @@ def evaluate_line(line, color, current):
             if not empty and i < size - 1 and line[i + 1] == color:
                 empty = True
             else:
-                evaluation += calc(consec, block_count - 1, current, empty)
+                if i < size - 1 and line[i + 1] != color and block_count == 2:
+                    evaluation += calc(consec, block_count, current, empty)
+                else:
+                    evaluation += calc(consec, block_count - 1, current, empty)
                 consec = 0
                 block_count = 1
                 empty = False
         elif value == piece.EMPTY:
             block_count = 1
         elif consec > 0:
-            evaluation += calc(consec, block_count, current)
+            if consec == 4 and i - 6 >= 0 and line[i - 6] != color and line[i - 5] == piece.EMPTY:
+                evaluation = calc(consec, 2, current)
+            else:
+                evaluation += calc(consec, block_count, current)
             consec = 0
             block_count = 2
         else:
