@@ -339,7 +339,7 @@
                 </Setter.Value>
             </Setter>
             <Setter Property="Width"
-              Value="125" />
+                    Value="84" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver"
                  Value="True">
@@ -443,7 +443,7 @@
                     </StackPanel.Resources>
                     <ToggleButton x:Name="UseAIToggleButton"
                         Checked="UseAiToggleButtonChecked"
-                        Content="UseAI"
+                        Content="Use AI"
                         IsThreeState="False"
                         Style="{DynamicResource ToggleButtonStyle}"
                         ToolTip="Turn on/off AI player" />
