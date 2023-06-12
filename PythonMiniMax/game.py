@@ -18,16 +18,6 @@ class Game:
         self.state = BoardState(15, StaticMethods.CreateBoard(self.arguments, self.player, self.size))
         self.ai_color = -player_index
 
-    def play(self, i, j):
-        position = (i, j)
-        if self.state.color != self.ai_color:
-            return False
-        if not self.state.is_valid_position(position):
-            return False
-        self.state = self.state.next(position)
-        self.finished = self.state.is_terminal()
-        return True
-
     def aiplay(self):
         import time
         t = time.time()
@@ -38,13 +28,3 @@ class Game:
         self.finished = self.state.is_terminal()
         # print(time.time() - t)
         return move
-
-    def get_status(self):
-        board = self.state.values
-        return {
-            'board': board.tolist(),
-            'next': -self.state.color,
-            'finished': self.finished,
-            'winner': self.state.winner,
-            # 'debug_board': self.state.__str__()
-        }
