@@ -89,31 +89,6 @@ class BoardState:
         i, j = position
         self.values[i, j] = value
 
-    def __str__(self):
-        out = ' ' * 3
-        out += '{}\n'.format(''.join(
-            '{}{}'.format((i + 1) % 10, i < 10 and ' ' or "'")
-            for i in range(self.size)
-        ))
-
-        for i in range(self.size):
-            out += '{}{} '.format(i + 1 < 10 and ' ' or '', i + 1)
-            for j in range(self.size):
-                out += piece.symbols[self[i, j]]
-                if self.last_move and (i, j) == tuple(self.last_move):
-                    out += '*'
-                else:
-                    out += ' '
-            if i == self.size - 1:
-                out += ''
-            else:
-                out += '\n'
-        return out
-
-    def __repr__(self):
-        return self.__str__()
-
-
 def issub(l, subl):
     l_size = len(l)
     subl_size = len(subl)

@@ -42,10 +42,12 @@ namespace Gomoku.Logic.Evaluator
                     switch (blockTilesCount)
                     {
                         case 0 when sameTilesCount + 1 >= Game.WinCondition:
-                            point += sameTilesCount;
+                            point += 1.0 * (1.0 - Math.Pow(2.0, sameTilesCount)) / (1.0 - 2.0) + 1;
                             break;
                         case 0:
                             {
+                                // Calculate point using Geometric series of 2.0 so that the more
+                                // chain it has, the more valuable the line
                                 var pointValue =
                                     1.0 * (1.0 - Math.Pow(2.0, sameTilesCount)) / (1.0 - 2.0);
 

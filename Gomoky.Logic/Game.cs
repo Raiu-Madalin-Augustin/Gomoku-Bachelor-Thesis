@@ -85,7 +85,7 @@ namespace Gomoku.Logic
                 Orientations.SecondDiagonal
             };
 
-            return orientations.Select(orientation => OrientedlLine.FromBoard(Board, tile.X, tile.Y, tile.Piece, orientation, maxTile: WinCondition, blankTolerance: 0)).Any(line => line.IsChained && line.SameTileCount + 1 == WinCondition && line.BlockTilesCount < 2);
+            return orientations.Select(orientation => OrientedlLine.FromBoard(Board, tile.X, tile.Y, tile.Piece, orientation, maxTile: WinCondition, blankTolerance: 0)).Any(line => line.IsChained && line.SameTileCount + 1 >= WinCondition && line.BlockTilesCount < 2);
         }
 
         public Game DeepClone()
