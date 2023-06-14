@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Gomoku.Logic.BoardRelated
 {
-    public class Tile : IPositional, IDeepCloneable<Tile>, IShallowCloneable<Tile>
+    public class Tile : ICoordinates, IDeepCloneable<Tile>, IShallowCloneable<Tile>
     {
         public Tile(int x, int y) : this(x, y, (Piece)Pieces.None)
         {

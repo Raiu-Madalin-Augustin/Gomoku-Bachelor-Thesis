@@ -3,7 +3,7 @@ using Gomoku.Logic.BoardRelated;
 
 namespace Gomoku.GUI.ViewModels
 {
-    public class TileViewModel : VMBase
+    public class TileViewModel : ViewModelBase
   {
     private bool _isHighlighted;
 

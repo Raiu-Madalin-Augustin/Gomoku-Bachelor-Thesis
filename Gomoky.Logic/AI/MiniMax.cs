@@ -10,17 +10,17 @@ namespace Gomoku.Logic.AI
 {
     public class MiniMax : MiniMaxBase
     {
+        private ICandidateSearcher CandidateSearcher { get; set; }
+        private ITileEvaluator TileEvaluator { get; set; }
+
+        public int Level { get; set; }
+
         public MiniMax(int level = 1)
         {
             Level = level;
             TileEvaluator = new Evaluate();
             CandidateSearcher = new LineBasedCandidates();
         }
-
-        public int Level { get; set; }
-
-        private ICandidateSearcher CandidateSearcher { get; set; }
-        private ITileEvaluator TileEvaluator { get; set; }
 
         protected override AnalysisResult DoAnalyze(Game clonedGame)
         {
@@ -41,7 +41,7 @@ namespace Gomoku.Logic.AI
 
             var possiblePositions = CandidateSearcher.Search(clonedGame).ToList();
 
-            var evaluations = new List<(IPositional positional, double value)>();
+            var evaluations = new List<(ICoordinates positional, double value)>();
 
             var max = double.MinValue;
 
@@ -79,7 +79,7 @@ namespace Gomoku.Logic.AI
             return new AnalysisResult(choices[choice], choices);
         }
 
-        private double EvaluateGame(Game game, IPositional positional, Player forPlayer, Player againstPlayer)
+        private double EvaluateGame(Game game, ICoordinates positional, Player forPlayer, Player againstPlayer)
         {
             var value = TileEvaluator.EvaluatePosition(game, positional, againstPlayer.Piece);
 
@@ -93,7 +93,7 @@ namespace Gomoku.Logic.AI
 
         private double MiniMaxEvaluate(
           Game game,
-          IPositional positional,
+          ICoordinates positional,
           Player forPlayer,
           int depth,
           double alpha = double.MinValue,

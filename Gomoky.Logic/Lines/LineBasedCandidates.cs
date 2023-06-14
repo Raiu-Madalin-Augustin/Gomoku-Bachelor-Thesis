@@ -5,7 +5,7 @@ namespace Gomoku.Logic.Lines
 {
     public class LineBasedCandidates : ICandidateSearcher
     {
-        public IEnumerable<IPositional> Search(Game game, int maxTile = 2, int blankTolerance = 1)
+        public IEnumerable<ICoordinates> Search(Game game, int maxTile = 2, int blankTolerance = 1)
         {
             var placedTiles = game.History;
 

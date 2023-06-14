@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Gomoku.Logic.BoardRelated;
-using Gomoku.Logic.Lines;
 
-namespace Gomoku.Logic
+namespace Gomoku.Logic.Lines
 {
     public class DirectionalLine
     {

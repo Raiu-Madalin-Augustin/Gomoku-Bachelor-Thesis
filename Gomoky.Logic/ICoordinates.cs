@@ -1,6 +1,6 @@
 ﻿namespace Gomoku.Logic
 {
-  public interface IPositional
+  public interface ICoordinates
   {
     public int X { get; }
     public int Y { get; }

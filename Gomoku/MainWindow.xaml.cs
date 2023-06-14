@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +19,7 @@ namespace Gomoku.GUI
           this(15, 15,
             new List<Player>()
             {
-          new Player("Player 1", new Piece(Pieces.X), new MiniMax()),
+          new Player("Player 1", new Piece(Pieces.X), new PythonMiniMax()),
           new Player("Player 2", new Piece(Pieces.O), new MiniMax(), true),
             })
         {
@@ -34,14 +32,14 @@ namespace Gomoku.GUI
             Game = new Game(boardWidth, boardHeight, players);
             BoardViewModel = new BoardViewModel(Game);
             InitializeBoard(boardWidth, boardHeight);
-            Game.BoardChanged += BoardBoardChangedAsync!;
+            Game.BoardChanged += BoardChangedAsync!;
             Game.GameOver += BoardGameOver!;
         }
 
         public BoardViewModel BoardViewModel { get; }
         public Game Game { get; }
 
-        private async Task<IPositional> AiPlayAsync(bool showAnalysis = false)
+        private async Task<ICoordinates> AiPlayAsync(bool showAnalysis = false)
         {
             var player = Game.Manager.CurrentPlayer;
 
@@ -74,9 +72,8 @@ namespace Gomoku.GUI
             BoardViewModel.Select(selectedTile);
         }
 
-        private async void BoardBoardChangedAsync(object sender, BoardChangedEventArgs e)
+        private async void BoardChangedAsync(object sender, BoardChangedEventArgs e)
         {
-            // AI
             if (Game is { IsOver: false, Manager.CurrentPlayer.IsAuto: true }
                 && UseAIToggleButton.IsChecked == true)
             {
@@ -86,11 +83,12 @@ namespace Gomoku.GUI
 
         private void BoardGameOver(object sender, GameOverEventArgs e)
         {
-            ShowMessage(e.Winner is null ? "Tie!" : $"{e.Winner.Name} wins!");
+            MessageTextBlock.Text = e.Winner is null ? "Tie!" : $"{e.Winner.Name} wins!";
+            MessageGrid.Visibility = Visibility.Visible;
             DemoToggleButton.IsChecked = false;
         }
 
-        private async void DemoToggleButtonChecked(object sender, RoutedEventArgs e)
+        private async void AiVsAiToggleButtonChecked(object sender, RoutedEventArgs e)
         {
             if (Game.IsOver)
             {
@@ -111,7 +109,7 @@ namespace Gomoku.GUI
             await RunAi();
         }
 
-        private void DemoToggleButtonUnchecked(object sender, RoutedEventArgs e)
+        private void AiVsAiToggleButtonUnchecked(object sender, RoutedEventArgs e)
         {
             UseAIToggleButton.IsChecked = false;
             UseAIToggleButton.IsEnabled = true;
@@ -219,12 +217,14 @@ namespace Gomoku.GUI
                 return;
             }
             Game.Play(tile.X, tile.Y);
-        }
-
-        private void ShowMessage(string message)
-        {
-            MessageTextBlock.Text = message;
-            MessageGrid.Visibility = Visibility.Visible;
+            if (Game.CheckGameOver(tile.X, tile.Y))
+            {
+                BoardGameOver(
+                    this,
+                    new GameOverEventArgs(
+                        Game.Manager.Turn.Current,
+                        Game.Manager.PreviousPlayer));
+            }
         }
 
         private void TileButtonClick(object? sender, RoutedEventArgs e)
@@ -244,7 +244,7 @@ namespace Gomoku.GUI
             Game.Undo();
         }
 
-        private async void UseAIToggleButtonChecked(object sender, RoutedEventArgs e)
+        private async void UseAiToggleButtonChecked(object sender, RoutedEventArgs e)
         {
             if (!Game.IsOver
               && DemoToggleButton.IsChecked == false

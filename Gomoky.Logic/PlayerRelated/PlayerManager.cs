@@ -25,15 +25,15 @@ namespace Gomoku.Logic.PlayerRelated
             Turn = playerManager.Turn.ShallowClone();
         }
 
-        public PlayerRelated.Player CurrentPlayer => Players[Turn.Current];
+        public Player CurrentPlayer => Players[Turn.Current];
 
-        public ImmutableArray<PlayerRelated.Player> Players { get; }
+        public ImmutableArray<Player> Players { get; }
 
-        public PlayerRelated.Player PreviousPlayer => Players[Turn.Previous];
+        public Player PreviousPlayer => Players[Turn.Previous];
 
         public Turn Turn { get; }
 
-        public PlayerRelated.Player this[int index] => Players[index];
+        public Player this[int index] => Players[index];
 
         public PlayerManager DeepClone()
         {

@@ -43,7 +43,7 @@ namespace Gomoku.Logic
 
         public event EventHandler<GameOverEventArgs>? GameOver;
 
-        public BoardRelated.Board Board { get; }
+        public Board Board { get; }
 
         public bool CanUndo => _history.Count > 0;
 
@@ -85,7 +85,7 @@ namespace Gomoku.Logic
                 Orientations.SecondDiagonal
             };
 
-            return orientations.Select(orientation => OrientedlLine.FromBoard(Board, tile.X, tile.Y, tile.Piece, orientation, maxTile: WinCondition, blankTolerance: 0)).Any(line => line.IsChained && line.SameTileCount + 1 == WinCondition && line.BlockTilesCount < 2);
+            return orientations.Select(orientation => OrientedlLine.FromBoard(Board, tile.X, tile.Y, tile.Piece, orientation, maxTile: WinCondition, blankTolerance: 0)).Any(line => line.IsChained && line.SameTileCount + 1 >= WinCondition && line.BlockTilesCount < 2);
         }
 
         public Game DeepClone()
@@ -93,7 +93,7 @@ namespace Gomoku.Logic
             return new Game(this);
         }
 
-        public void Play(IPositional positional)
+        public void Play(ICoordinates positional)
         {
             Play(positional.X, positional.Y);
         }
