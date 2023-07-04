@@ -48,7 +48,7 @@ namespace Gomoku.GUI
             sw.Stop();
             if (sw.ElapsedMilliseconds < 500)
             {
-                var delay = 500 - sw.ElapsedMilliseconds;
+                var delay = 700 - sw.ElapsedMilliseconds;
                 await Task.Delay((int)delay);
             }
 
