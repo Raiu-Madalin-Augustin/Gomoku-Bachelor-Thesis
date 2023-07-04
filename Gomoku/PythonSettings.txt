@@ -1,0 +1,2 @@
+D:\\Year_3_sem_2_Projects\\BachelorThesis\\Gomoku-Bachelor-Thesis\\PythonMiniMax\\main.py
+C:\\Python310\\python.exe
